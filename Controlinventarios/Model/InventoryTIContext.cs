@@ -23,9 +23,9 @@ namespace Controlinventarios.Model
             base.OnModelCreating(modelBuilder);
         }
 
-        public virtual DbSet<Area> Area { get; set; }
-        public virtual DbSet<Persona> Persona { get; set; }
-        public virtual DbSet<ElementType> ElementType { get; set; }
-        public virtual DbSet<Element> Element { get; set; }
+        public virtual DbSet<Area> inv_area { get; set; }
+        public virtual DbSet<Persona> inv_persona { get; set; }
+        public virtual DbSet<ElementType> inv_elementType { get; set; }
+        public virtual DbSet<Element> inv_element { get; set; }
     }
 }

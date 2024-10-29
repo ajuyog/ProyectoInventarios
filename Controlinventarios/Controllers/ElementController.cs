@@ -27,16 +27,17 @@ namespace Controlinventarios.Controllers
         [HttpGet]
         public async Task<ActionResult<List<ElementDto>>> Get()
         {
-            var elemento = await _context.Element.ToListAsync();
+            var elemento = await _context.inv_element.ToListAsync();
+            var elementoDto = _mapper.Map<List<ElementDto>>(elemento);
 
-            return Ok(elemento);
+            return Ok(elementoDto);
         }
 
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ElementDto>> GetId(int id)
         {
-            var elemento = await _context.Element.FirstOrDefaultAsync(x => x.id == id);
+            var elemento = await _context.inv_element.FirstOrDefaultAsync(x => x.id == id);
             if (elemento == null)
             {
                 return BadRequest();
@@ -51,7 +52,7 @@ namespace Controlinventarios.Controllers
             // el dto verifica la tabla
             var elemento = _mapper.Map<Element>(createDto);
             // añade la entidad al contexto
-            _context.Element.Add(elemento);
+            _context.inv_element.Add(elemento);
             // guardar los datos en la basee de datoss
             await _context.SaveChangesAsync();
             //retorna lo guardado
@@ -60,11 +61,11 @@ namespace Controlinventarios.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, ElementCreateDto updateDto)
         {
-            var elemento = await _context.Element.FirstOrDefaultAsync(x => x.id == id);
+            var elemento = await _context.inv_element.FirstOrDefaultAsync(x => x.id == id);
 
             elemento = _mapper.Map(updateDto, elemento);
 
-            _context.Element.Update(elemento);
+            _context.inv_element.Update(elemento);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetId), new { elemento.id }, elemento);
@@ -74,14 +75,14 @@ namespace Controlinventarios.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var elemento = await _context.Element.FindAsync(id);
+            var elemento = await _context.inv_element.FindAsync(id);
 
             if (elemento == null)
             {
                 return BadRequest();
             }
 
-            _context.Element.Remove(elemento);
+            _context.inv_element.Remove(elemento);
             await _context.SaveChangesAsync();
 
             return Ok();
