@@ -23,6 +23,7 @@ namespace Controlinventarios.Controllers
             _mapper = mapper;
         }
 
+
         [HttpGet]
         public async Task<ActionResult<List<ElementDto>>> Get()
         {
