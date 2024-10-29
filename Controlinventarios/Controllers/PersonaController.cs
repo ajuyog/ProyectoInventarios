@@ -28,9 +28,10 @@ namespace Controlinventarios.Controllers
         [HttpGet]
         public async Task<ActionResult<List<PersonaDto>>> Get()
         {
-            var areas = await _context.Persona.ToListAsync();
+            var personas = await _context.Persona.ToListAsync();
+            var personaDtos = _mapper.Map<List<PersonaDto>>(personas);
 
-            return Ok(areas);
+            return Ok(personaDtos);
         }
 
 

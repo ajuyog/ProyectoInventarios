@@ -28,8 +28,9 @@ namespace Controlinventarios.Controllers
         public async Task<ActionResult<List<ElementTypeDto>>> Get()
         {
             var elemento = await _context.ElementType.ToListAsync();
+            var elementoDtos = _mapper.Map<List<ElementTypeDto>>(elemento);
 
-            return Ok(elemento);
+            return Ok(elementoDtos);
  
         }
 

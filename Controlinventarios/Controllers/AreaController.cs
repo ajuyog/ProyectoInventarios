@@ -23,17 +23,18 @@ namespace Controlinventarios.Controllers
             _mapper = mapper;
         }
 
-        
+
         [HttpGet]
         public async Task<ActionResult<List<AreaDto>>> Get()
         {
             var areas = await _context.Area.ToListAsync();
-            //var areaDtos = _mapper.Map<List<AreaDto>>(areas);
+            var areaDtos = _mapper.Map<List<AreaDto>>(areas); 
 
-            return Ok(areas);
+            return Ok(areaDtos);
         }
 
-        
+
+
         [HttpGet("{id}")]
         public async Task<ActionResult<AreaDto>> GetId(int id)
         {
