@@ -27,7 +27,7 @@ namespace Controlinventarios.Controllers
         [HttpGet]
         public async Task<ActionResult<List<ElementTypeDto>>> Get()
         {
-            var elemento = await _context.ElementType.ToListAsync();
+            var elemento = await _context.inv_elementType.ToListAsync();
             var elementoDtos = _mapper.Map<List<ElementTypeDto>>(elemento);
 
             return Ok(elementoDtos);
@@ -38,7 +38,7 @@ namespace Controlinventarios.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ElementTypeDto>> GetId(int id)
         {
-            var elemento = await _context.ElementType.FirstOrDefaultAsync(x => x.id == id);
+            var elemento = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == id);
             if (elemento == null)
             {
                 return BadRequest();
@@ -53,7 +53,7 @@ namespace Controlinventarios.Controllers
             // el dto verifica la tabla
             var elemento = _mapper.Map<ElementType>(createDto);
             // añade la entidad al contexto
-            _context.ElementType.Add(elemento);
+            _context.inv_elementType.Add(elemento);
             // guardar los datos en la basee de datos
             await _context.SaveChangesAsync();
             //retorna lo guardado
@@ -62,11 +62,11 @@ namespace Controlinventarios.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, ElementTypeCreateDto updateDto)
         {
-            var elemento = await _context.ElementType.FirstOrDefaultAsync(x => x.id == id);
+            var elemento = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == id);
 
             elemento = _mapper.Map(updateDto, elemento);
 
-            _context.ElementType.Update(elemento);
+            _context.inv_elementType.Update(elemento);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetId), new { elemento.id }, elemento);
@@ -75,14 +75,14 @@ namespace Controlinventarios.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var elemento = await _context.ElementType.FindAsync(id);
+            var elemento = await _context.inv_elementType.FindAsync(id);
 
             if (elemento == null)
             {
                 return BadRequest();
             }
 
-            _context.ElementType.Remove(elemento);
+            _context.inv_elementType.Remove(elemento);
             await _context.SaveChangesAsync();
 
             return Ok();

@@ -28,7 +28,7 @@ namespace Controlinventarios.Controllers
         [HttpGet]
         public async Task<ActionResult<List<PersonaDto>>> Get()
         {
-            var personas = await _context.Persona.ToListAsync();
+            var personas = await _context.inv_persona.ToListAsync();
             var personaDtos = _mapper.Map<List<PersonaDto>>(personas);
 
             return Ok(personaDtos);
@@ -38,7 +38,7 @@ namespace Controlinventarios.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<PersonaDto>> GetId(int id)
         {
-            var area = await _context.Persona.FirstOrDefaultAsync(x => x.id == id);
+            var area = await _context.inv_persona.FirstOrDefaultAsync(x => x.id == id);
             if (area == null)
             {
                 return BadRequest();
@@ -54,7 +54,7 @@ namespace Controlinventarios.Controllers
             var persona = _mapper.Map<Persona>(createDto);
 
             // añade la entidad al contexto
-            _context.Persona.Add(persona);
+            _context.inv_persona.Add(persona);
             // guardar los datos en la basee de datos
             await _context.SaveChangesAsync();
             //retorna lo guardado
@@ -63,11 +63,11 @@ namespace Controlinventarios.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, PersonaCreateDto updateDto)
         {
-            var persona = await _context.Persona.FirstOrDefaultAsync(x => x.id == id);
+            var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.id == id);
 
             persona = _mapper.Map(updateDto, persona);
 
-            _context.Persona.Update(persona);
+            _context.inv_persona.Update(persona);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetId), new { persona.id }, persona);
@@ -77,14 +77,14 @@ namespace Controlinventarios.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var persona = await _context.Persona.FindAsync(id);
+            var persona = await _context.inv_persona.FindAsync(id);
 
             if (persona == null)
             {
                 return BadRequest();
             }
 
-            _context.Persona.Remove(persona);
+            _context.inv_persona.Remove(persona);
             await _context.SaveChangesAsync();
 
             return Ok();
