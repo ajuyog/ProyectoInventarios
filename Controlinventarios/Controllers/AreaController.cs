@@ -28,9 +28,9 @@ namespace Controlinventarios.Controllers
         public async Task<ActionResult<List<AreaDto>>> Get()
         {
             var areas = await _context.inv_area.ToListAsync();
-            //var areaDtos = _mapper.Map<List<AreaDto>>(areas);
+            var areaDtos = _mapper.Map<List<AreaDto>>(areas);
 
-            return Ok(areas);
+            return Ok(areaDtos);
         }
 
         

@@ -27,15 +27,18 @@ namespace Controlinventarios
             var connectionStringMysql = Configuration.GetConnectionString("DefaultConnectionMySqlValuez");
             services.AddDbContext<InventoryTIContext>(options => options.UseMySql(connectionStringMysql, ServerVersion.AutoDetect(connectionStringMysql)));
 
+            //var connectionStrinMysql = Configuration.GetConnectionString("DefaultConnectionMySql");
+            //services.AddDbContext<InventoryTIContext>(options => options.UseMySql(connectionStrinMysql, ServerVersion.AutoDetect(connectionStrinMysql)));
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
-                //app.UseDeveloperExceptionPage();
-                //app.UseSwagger();
-                //app.UseSwaggerUI();
+                app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
             app.UseDeveloperExceptionPage();

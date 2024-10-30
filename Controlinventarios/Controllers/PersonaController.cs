@@ -28,21 +28,22 @@ namespace Controlinventarios.Controllers
         [HttpGet]
         public async Task<ActionResult<List<PersonaDto>>> Get()
         {
-            var areas = await _context.inv_persona.ToListAsync();
+            var persona = await _context.inv_persona.ToListAsync();
+            var personaDtos = _mapper.Map<List<PersonaDto>>(persona);
 
-            return Ok(areas);
+            return Ok(personaDtos);
         }
 
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PersonaDto>> GetId(int id)
         {
-            var area = await _context.inv_persona.FirstOrDefaultAsync(x => x.id == id);
-            if (area == null)
+            var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.id == id);
+            if (persona == null)
             {
                 return BadRequest();
             }
-            var areaDto = _mapper.Map<PersonaDto>(area);
+            var areaDto = _mapper.Map<PersonaDto>(persona);
             return Ok(areaDto);
         }
 

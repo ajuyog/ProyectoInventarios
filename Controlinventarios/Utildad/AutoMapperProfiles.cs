@@ -24,6 +24,13 @@ namespace Controlinventarios.Utilidad
 
             CreateMap<ElementCreateDto, Element>().ReverseMap();
             CreateMap<Element, ElementDto>().ReverseMap();
+
+            //CreateMap<EnsambleCreateDto, Ensamble>().ReverseMap();
+            //CreateMap<Ensamble, EnsambleDto>().ReverseMap();
+
+            CreateMap<IdentificadorCreateDto, Identificador>().ReverseMap();
+            CreateMap<Identificador, IdentificadorDto>().ReverseMap();
+
         }
     }
 }
