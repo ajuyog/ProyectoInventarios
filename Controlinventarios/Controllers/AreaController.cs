@@ -27,7 +27,7 @@ namespace Controlinventarios.Controllers
         [HttpGet]
         public async Task<ActionResult<List<AreaDto>>> Get()
         {
-            var areas = await _context.Area.ToListAsync();
+            var areas = await _context.inv_area.ToListAsync();
             //var areaDtos = _mapper.Map<List<AreaDto>>(areas);
 
             return Ok(areas);
@@ -37,7 +37,7 @@ namespace Controlinventarios.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<AreaDto>> GetId(int id)
         {
-            var area = await _context.Area.FirstOrDefaultAsync(x => x.id == id);
+            var area = await _context.inv_area.FirstOrDefaultAsync(x => x.id == id);
             if (area == null)
             {
                 return BadRequest();
@@ -53,7 +53,7 @@ namespace Controlinventarios.Controllers
             var area = _mapper.Map<Area>(createDto);
             
             // añade la entidad al contexto
-            _context.Area.Add(area);
+            _context.inv_area.Add(area);
             // guardar los datos en la basee de datos
             await _context.SaveChangesAsync();
             //retorna lo guardado
@@ -62,11 +62,11 @@ namespace Controlinventarios.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, AreaCreateDto updateDto)
         {
-            var area = await _context.Area.FirstOrDefaultAsync(x => x.id == id);
+            var area = await _context.inv_area.FirstOrDefaultAsync(x => x.id == id);
 
             area = _mapper.Map(updateDto, area);
 
-            _context.Area.Update(area);
+            _context.inv_area.Update(area);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetId), new { area.id }, area);
@@ -75,14 +75,14 @@ namespace Controlinventarios.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var area = await _context.Area.FindAsync(id);
+            var area = await _context.inv_area.FindAsync(id);
 
             if (area == null)
             {
                 return BadRequest();
             }
 
-            _context.Area.Remove(area);
+            _context.inv_area.Remove(area);
             await _context.SaveChangesAsync();
 
             return Ok();
