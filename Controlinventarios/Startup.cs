@@ -20,7 +20,7 @@ namespace Controlinventarios
             services.AddAutoMapper(typeof(Startup));
             //var connectionString = Configuration.GetConnectionString("DefaultConnectionSqlServer");
 
-            //// Registra el DbContext usando SQL Server
+            // Registra el DbContext usando SQL Server
             //services.AddDbContext<InventoryTIContext>(options =>
             //    options.UseSqlServer(connectionString));
 
