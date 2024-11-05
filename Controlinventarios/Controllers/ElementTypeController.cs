@@ -28,12 +28,11 @@ namespace Controlinventarios.Controllers
         public async Task<ActionResult<List<ElementTypeDto>>> Get()
         {
             var elemento = await _context.inv_elementType.ToListAsync();
-            var elementoDtos = _mapper.Map<List<ElementDto>>(elemento);
+            var elementoDtos = _mapper.Map<List<ElementTypeDto>>(elemento);
 
             return Ok(elementoDtos);
  
         }
-
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ElementTypeDto>> GetId(int id)

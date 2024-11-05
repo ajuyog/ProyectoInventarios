@@ -12,13 +12,16 @@ namespace Controlinventarios.Utilidad
     {
         public AutoMapperProfiles()
         {
-            
+
             CreateMap<AreaCreateDto, Area>().ReverseMap();
             CreateMap<Area, AreaDto>().ReverseMap();
 
             CreateMap<PersonaCreateDto, Persona>().ReverseMap();
             CreateMap<Persona, PersonaDto>().ReverseMap();
 
+            CreateMap<ElementTypeCreateDto, ElementType>().ReverseMap();
+            CreateMap<ElementType, ElementTypeDto>().ReverseMap();
+         
             CreateMap<ElementTypeCreateDto, ElementType>().ReverseMap();
             CreateMap<ElementType, ElementTypeDto>().ReverseMap();
 
