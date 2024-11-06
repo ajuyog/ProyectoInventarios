@@ -58,6 +58,7 @@ namespace Controlinventarios.Controllers
             //retorna lo guardado
             return CreatedAtAction(nameof(GetId), new { id = elemento.id }, elemento);
         }
+
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, ElementCreateDto updateDto)
         {
@@ -69,7 +70,6 @@ namespace Controlinventarios.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetId), new { elemento.id }, elemento);
-
         }
         
         [HttpDelete("{id}")]
