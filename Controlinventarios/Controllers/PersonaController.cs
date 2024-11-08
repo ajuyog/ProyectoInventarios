@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Controlinventarios.Dto;
 using Controlinventarios.Model;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
@@ -51,6 +52,13 @@ namespace Controlinventarios.Controllers
         [HttpPost]
         public async Task<ActionResult> Post(PersonaCreateDto createDto)
         {
+            var existePersona = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == createDto.userId);
+
+            if (existePersona == null)
+            {
+                return NotFound($"No existe el registro para el id {createDto.userId}");
+            }
+
             // el dto verifica la tabla
             var persona = _mapper.Map<Persona>(createDto);
 
@@ -72,6 +80,14 @@ namespace Controlinventarios.Controllers
             {
                 return BadRequest($"");
             }
+
+            var existePersona = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == updateDto.userId);
+
+            if (existePersona == null)
+            {
+                return NotFound($"No existe el registro para el id {updateDto.userId}");
+            }
+
 
             persona = _mapper.Map(updateDto, persona);
 
