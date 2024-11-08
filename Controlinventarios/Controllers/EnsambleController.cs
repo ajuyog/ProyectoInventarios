@@ -40,11 +40,12 @@ namespace Controlinventarios.Controllers
             var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.id == id);
             if (ensamble == null)
             {
-                return BadRequest();
+                return BadRequest($"No existe el id: {id}");
             }
             var ensambleDto = _mapper.Map<EnsambleDto>(ensamble);
             return Ok(ensambleDto);
         }
+
 
         [HttpPost]
         public async Task<ActionResult> Post(EnsambleCreateDto createDto)
@@ -59,10 +60,17 @@ namespace Controlinventarios.Controllers
             //retorna lo guardado
             return CreatedAtAction(nameof(GetId), new { id = ensamble.id }, ensamble);
         }
+
+
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, EnsambleCreateDto updateDto)
         {
             var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.id == id);
+
+            if (ensamble == null) 
+            {
+                return BadRequest($"No existe el id:{id}");
+            }
 
             ensamble = _mapper.Map(updateDto, ensamble);
 
@@ -72,6 +80,8 @@ namespace Controlinventarios.Controllers
             return CreatedAtAction(nameof(GetId), new { ensamble.id }, ensamble);
 
         }
+
+
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
@@ -79,7 +89,7 @@ namespace Controlinventarios.Controllers
 
             if (ensamble == null)
             {
-                return BadRequest();
+                return BadRequest($"No existe el id: {id}");
             }
 
             _context.inv_ensamble.Remove(ensamble);

@@ -32,17 +32,21 @@ namespace Controlinventarios.Controllers
 
             return Ok(identificadorDtos);
         }
+
+
         [HttpGet("{id}")]
         public async Task<ActionResult<IdentificadorDto>> GetId(int id)
         {
             var identificador = await _context.inv_identificador.FirstOrDefaultAsync(x => x.id == id);
+            
             if (identificador == null)
             {
-                return BadRequest();
+                return BadRequest($"No existe el id: {id}");
             }
             var identificadorDto = _mapper.Map<IdentificadorDto>(identificador);
             return Ok(identificadorDto);
         }
+
 
         [HttpPost]
         public async Task<ActionResult> Post(IdentificadorCreateDto createDto)
@@ -58,6 +62,7 @@ namespace Controlinventarios.Controllers
             return CreatedAtAction(nameof(GetId), new { id = identificador.id }, identificador);
         }
 
+
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, IdentificadorCreateDto updateDto)
         {
@@ -72,6 +77,7 @@ namespace Controlinventarios.Controllers
 
         }
 
+
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
@@ -79,7 +85,7 @@ namespace Controlinventarios.Controllers
 
             if (identificador == null)
             {
-                return BadRequest();
+                return BadRequest($"No existe el id: {id}");
             }
 
             _context.inv_identificador.Remove(identificador);
