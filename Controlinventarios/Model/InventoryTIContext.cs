@@ -29,5 +29,6 @@ namespace Controlinventarios.Model
         public virtual DbSet<Element> inv_element { get; set; }
         public virtual DbSet<Ensamble> inv_ensamble { get; set; }
         public virtual DbSet<Identificador> inv_identificador { get; set; }
+        public virtual DbSet<UserId> aspnetusers { get; set; }
     }
 }
