@@ -1,6 +1,6 @@
 ﻿namespace Controlinventarios.Model
 {
-    public class UserId
+    public class AspnetUsers
     {
         public string Id { get; set; }
         public string UserName { get; set; }
