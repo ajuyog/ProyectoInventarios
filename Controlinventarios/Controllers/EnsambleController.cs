@@ -10,23 +10,26 @@ using System.Threading.Tasks;
 
 namespace Controlinventarios.Controllers
 {
+
     [ApiController]
     [Route("api/[controller]")]
     public class EnsambleController : ControllerBase
     {
+
         private readonly InventoryTIContext _context;
         private readonly IMapper _mapper;
 
         public EnsambleController(InventoryTIContext context, IMapper mapper)
         {
+
             _context = context;
             _mapper = mapper;
         }
 
-
         [HttpGet]
         public async Task<ActionResult<List<EnsambleDto>>> Get()
         {
+
             var ensamble = await _context.inv_ensamble.ToListAsync();
             var ensambleDtos = _mapper.Map<List<EnsambleDto>>(ensamble);
 
@@ -34,14 +37,17 @@ namespace Controlinventarios.Controllers
         }
 
 
+
         [HttpGet("{id}")]
         public async Task<ActionResult<EnsambleDto>> GetId(int id)
         {
+
             var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.id == id);
             if (ensamble == null)
             {
                 return BadRequest($"No existe el id: {id}");
             }
+
             var ensambleDto = _mapper.Map<EnsambleDto>(ensamble);
             return Ok(ensambleDto);
         }
@@ -66,11 +72,6 @@ namespace Controlinventarios.Controllers
         public async Task<ActionResult> Update(int id, EnsambleCreateDto updateDto)
         {
             var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.id == id);
-
-            if (ensamble == null) 
-            {
-                return BadRequest($"No existe el id:{id}");
-            }
 
             ensamble = _mapper.Map(updateDto, ensamble);
 

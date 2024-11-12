@@ -1,9 +1,9 @@
 ﻿namespace Controlinventarios.Model
 {
-    public class ElementType
+    public class Marca
     {
         public int id { get; set; }
         public string Nombre { get; set; }
-        public int IdElementType { get; set; }
+        public bool activo { get; set; }
     }
 }

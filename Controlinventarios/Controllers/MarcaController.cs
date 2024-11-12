@@ -13,68 +13,68 @@ namespace Controlinventarios.Controllers
 
     [ApiController]
     [Route("api/[controller]")]
-    public class AreaController : ControllerBase
+    public class MarcaController : ControllerBase
     {
 
         private readonly InventoryTIContext _context;
         private readonly IMapper _mapper;
 
-        public AreaController(InventoryTIContext context, IMapper mapper)
+        public MarcaController(InventoryTIContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
         }
 
-        
-        [HttpGet]
-        public async Task<ActionResult<List<AreaDto>>> Get()
-        {
-            var areas = await _context.inv_area.ToListAsync();
-            var areaDtos = _mapper.Map<List<AreaDto>>(areas);
 
-            return Ok(areaDtos);
+        [HttpGet]
+        public async Task<ActionResult<List<MarcaDto>>> Get()
+        {
+            var marca = await _context.inv_marca.ToListAsync();
+            var marcaDtos = _mapper.Map<List<MarcaDto>>(marca);
+
+            return Ok(marcaDtos);
         }
 
-        
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<AreaDto>> GetId(int id)
+        public async Task<ActionResult<MarcaDto>> GetId(int id)
         {
-            var area = await _context.inv_area.FirstOrDefaultAsync(x => x.id == id);
-            if (area == null)
+            var marca = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == id);
+            if (marca == null)
             {
                 return BadRequest($"No existe el id: {id}");
             }
-            var areaDto = _mapper.Map<AreaDto>(area);
-            return Ok(areaDto);
+            var marcaDto = _mapper.Map<MarcaDto>(marca);
+            return Ok(marcaDto);
         }
 
 
         [HttpPost]
-        public async Task<ActionResult> Post(AreaCreateDto createDto)
+        public async Task<ActionResult> Post(MarcaCreateDto createDto)
         {
             // el dto verifica la tabla
-            var area = _mapper.Map<Area>(createDto);
-            
+            var marca = _mapper.Map<Marca>(createDto);
+
             // añade la entidad al contexto
-            _context.inv_area.Add(area);
+            _context.inv_marca.Add(marca);
             // guardar los datos en la basee de datos
             await _context.SaveChangesAsync();
             //retorna lo guardado
-            return CreatedAtAction(nameof(GetId), new { id = area.id }, area);
+            return CreatedAtAction(nameof(GetId), new { id = marca.id }, marca);
         }
 
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, AreaCreateDto updateDto)
+        public async Task<ActionResult> Update(int id, MarcaCreateDto updateDto)
         {
-            var area = await _context.inv_area.FirstOrDefaultAsync(x => x.id == id);
+            var marca = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == id);
 
-            area = _mapper.Map(updateDto, area);
+            marca = _mapper.Map(updateDto, marca);
 
-            _context.inv_area.Update(area);
+            _context.inv_marca.Update(marca);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetId), new { area.id }, area);
+            return CreatedAtAction(nameof(GetId), new { marca.id }, marca);
 
         }
 
@@ -82,14 +82,14 @@ namespace Controlinventarios.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var area = await _context.inv_area.FindAsync(id);
+            var marca = await _context.inv_marca.FindAsync(id);
 
-            if (area == null)
+            if (marca == null)
             {
                 return BadRequest($"No existe el id: {id}");
             }
 
-            _context.inv_area.Remove(area);
+            _context.inv_marca.Remove(marca);
             await _context.SaveChangesAsync();
 
             return Ok();

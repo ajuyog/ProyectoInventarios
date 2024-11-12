@@ -1,8 +1,8 @@
 ﻿namespace Controlinventarios.Dto
 {
-    public class EnsambleCreateDto
+    public class AsignacionCreateDto
     {
+        public int IdPersona { get; set; }
         public int IdElement { get; set; }
-        public int IdIdentificador { get; set; }
     }
 }

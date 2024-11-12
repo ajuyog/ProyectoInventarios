@@ -12,7 +12,7 @@ namespace Controlinventarios.Utilidad
     {
         public AutoMapperProfiles()
         {
-
+            
             CreateMap<AreaCreateDto, Area>().ReverseMap();
             CreateMap<Area, AreaDto>().ReverseMap();
 
@@ -21,19 +21,28 @@ namespace Controlinventarios.Utilidad
 
             CreateMap<ElementTypeCreateDto, ElementType>().ReverseMap();
             CreateMap<ElementType, ElementTypeDto>().ReverseMap();
-         
-            CreateMap<ElementTypeCreateDto, ElementType>().ReverseMap();
-            CreateMap<ElementType, ElementTypeDto>().ReverseMap();
-
-            CreateMap<ElementCreateDto, Element>().ReverseMap();
-            CreateMap<Element, ElementDto>().ReverseMap();
 
             //CreateMap<EnsambleCreateDto, Ensamble>().ReverseMap();
             //CreateMap<Ensamble, EnsambleDto>().ReverseMap();
 
-            CreateMap<IdentificadorCreateDto, Identificador>().ReverseMap();
-            CreateMap<Identificador, IdentificadorDto>().ReverseMap();
+            CreateMap<PropiedadesCreateDto, Propiedades>().ReverseMap();
+            CreateMap<Propiedades, PropiedadesDto>().ReverseMap();
 
+            CreateMap<EnsambleCreateDto, Ensamble>().ReverseMap();
+            CreateMap<Ensamble, EnsambleDto>().ReverseMap();
+            
+            CreateMap<AsignacionCreateDto, Asignacion>().ReverseMap();
+            CreateMap<Asignacion, AsignacionDto>().ReverseMap();
+
+            //CreateMap<FacturacionTMKCreateDto, FacturacionTMK>().ReverseMap();
+            //CreateMap<FacturacionTMK, FacturacionTMKDto>().ReverseMap();
+
+            CreateMap<FacturacionTMKCreateDto, FacturacionTMK>().ReverseMap();
+            CreateMap<FacturacionTMK, FacturacionTMKDto>().ReverseMap();
+            
+            CreateMap<MarcaCreateDto, Marca>().ReverseMap();
+            CreateMap<Marca, MarcaDto>().ReverseMap();
+            
             CreateMap<AspnetUsers, AspnetUsersDto>().ReverseMap();
 
         }
