@@ -16,6 +16,7 @@ namespace Controlinventarios.Model
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Asignacion>().HasKey(t => t.id);
             modelBuilder.Entity<Ensamble>().HasKey(t => t.id);
             modelBuilder.Entity<Propiedades>().HasKey(t => t.id);
             modelBuilder.Entity<ElementType>().HasKey(t => t.id);
