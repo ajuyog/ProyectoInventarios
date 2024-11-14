@@ -1,11 +1,18 @@
-﻿namespace Controlinventarios.Model
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+
+namespace Controlinventarios.Model
 {
     public class FacturacionTMK
     {
-        public int id { get; set; }
-        public int item  { get; set; }
-        public string codigo { get; set; }
-        public string descripcion { get; set; }
-        public float vlrUnitario { get; set; }
+        public int Id { get; set; }
+
+        public float VlrNeto { get; set; }
+ 
+        public int IdEnsamble { get; set; }
+
+        public string Descripcion { get; set; }
+
+        public DateOnly? Fecha { get; set; }
     }
 }

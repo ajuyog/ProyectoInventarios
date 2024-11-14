@@ -16,8 +16,8 @@ namespace Controlinventarios.Model
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Asignacion>().HasKey(t => t.id);
-            modelBuilder.Entity<Ensamble>().HasKey(t => t.id);
+            modelBuilder.Entity<Asignacion>().HasKey(x => x.id);
+            modelBuilder.Entity<Ensamble>().HasKey(t => t.Id);
             modelBuilder.Entity<Propiedades>().HasKey(t => t.id);
             modelBuilder.Entity<ElementType>().HasKey(t => t.id);
             modelBuilder.Entity<Persona>().HasKey(t => t.id);
@@ -33,7 +33,7 @@ namespace Controlinventarios.Model
         public virtual DbSet<Asignacion> inv_asignacion { get; set; }
         public virtual DbSet<FacturacionTMK> inv_facturaciontmk { get; set; }
         public virtual DbSet<Marca> inv_marca { get; set; }
-        public  virtual DbSet<AspnetUsers> aspnetusers { get; set; }
+        public virtual DbSet<AspnetUsers> aspnetusers { get; set; }
 
     }
 }

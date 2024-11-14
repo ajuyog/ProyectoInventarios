@@ -2,9 +2,12 @@
 {
     public class FacturacionTMKCreateDto
     {
-        public int item { get; set; }
-        public string codigo { get; set; }
-        public string descripcion { get; set; }
-        public float vlrUnitario { get; set; }
+        public float VlrNeto { get; set; }
+
+        public int IdEnsamble { get; set; }
+
+        public string Descripcion { get; set; }
+
+        public DateOnly? Fecha { get; set; }
     }
 }

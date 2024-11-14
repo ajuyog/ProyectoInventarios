@@ -54,6 +54,13 @@ namespace Controlinventarios.Controllers
             // el dto verifica la tabla
             var persona = _mapper.Map<Persona>(createDto);
 
+            //Verificacion si existe el area
+            var areaExiste = await _context.inv_area.FindAsync(createDto.IdArea);
+            if (areaExiste == null)
+            {
+                return NotFound($"El tipo de elemento con el ID {createDto.IdArea} no fue encontrado.");
+            }
+
             // añade la entidad al contexto
             _context.inv_persona.Add(persona);
             // guardar los datos en la basee de datos
@@ -67,6 +74,13 @@ namespace Controlinventarios.Controllers
         public async Task<ActionResult> Update(int id, PersonaCreateDto updateDto)
         {
             var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.id == id);
+
+            //Verificacion si existe el area
+            var areaExiste = await _context.inv_area.FindAsync(updateDto.IdArea);
+            if (areaExiste == null)
+            {
+                return NotFound($"El tipo de elemento con el ID {updateDto.IdArea} no fue encontrado.");
+            }
 
             persona = _mapper.Map(updateDto, persona);
 

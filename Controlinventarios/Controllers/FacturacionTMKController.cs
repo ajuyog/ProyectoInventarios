@@ -36,7 +36,7 @@ namespace Controlinventarios.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<FacturacionTMKDto>> GetId(int id)
         {
-            var facturacion = await _context.inv_facturaciontmk.FirstOrDefaultAsync(x => x.id == id);
+            var facturacion = await _context.inv_facturaciontmk.FirstOrDefaultAsync(x => x.Id == id);
             if (facturacion == null)
             {
                 return BadRequest($"No existe el id: {id}");
@@ -52,26 +52,40 @@ namespace Controlinventarios.Controllers
             // el dto verifica la tabla
             var facturacion = _mapper.Map<FacturacionTMK>(createDto);
 
+            //Verificacion del id Ensamble
+            var ensambleExiste = await _context.inv_ensamble.FindAsync(createDto.IdEnsamble);
+            if (ensambleExiste == null)
+            {
+                return NotFound($"El ensamble con ID {createDto.IdEnsamble} no fue encontrado.");
+            }
+
             // añade la entidad al contexto
             _context.inv_facturaciontmk.Add(facturacion);
             // guardar los datos en la basee de datos
             await _context.SaveChangesAsync();
             //retorna lo guardado
-            return CreatedAtAction(nameof(GetId), new { id = facturacion.id }, facturacion);
+            return CreatedAtAction(nameof(GetId), new { id = facturacion.Id }, facturacion);
         }
 
 
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, FacturacionTMKCreateDto updateDto)
         {
-            var facturacion = await _context.inv_facturaciontmk.FirstOrDefaultAsync(x => x.id == id);
+            var facturacion = await _context.inv_facturaciontmk.FirstOrDefaultAsync(x => x.Id == id);
+
+            //Verificacion del id Ensamble
+            var ensambleExiste = await _context.inv_ensamble.FindAsync(updateDto.IdEnsamble);
+            if (ensambleExiste == null)
+            {
+                return NotFound($"El ensamble con ID {updateDto.IdEnsamble} no fue encontrado.");
+            }
 
             facturacion = _mapper.Map(updateDto, facturacion);
 
             _context.inv_facturaciontmk.Update(facturacion);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetId), new { facturacion.id }, facturacion);
+            return CreatedAtAction(nameof(GetId), new { facturacion.Id }, facturacion);
 
         }
 

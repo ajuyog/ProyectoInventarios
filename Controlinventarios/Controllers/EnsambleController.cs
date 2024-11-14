@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Controlinventarios.Dto;
 using Controlinventarios.Model;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
@@ -42,7 +43,7 @@ namespace Controlinventarios.Controllers
         public async Task<ActionResult<EnsambleDto>> GetId(int id)
         {
 
-            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.id == id);
+            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == id);
             if (ensamble == null)
             {
                 return BadRequest($"No existe el id: {id}");
@@ -59,26 +60,54 @@ namespace Controlinventarios.Controllers
             // el dto verifica la tabla
             var ensamble = _mapper.Map<Ensamble>(createDto);
 
+            //Verificacion de ElemenType
+            var elementoExiste = await _context.inv_elementType.FindAsync(createDto.IdElementType);
+            if (elementoExiste == null)
+            {
+                return NotFound($"El tipo de elemento con el ID {createDto.IdElementType} no fue encontrado.");
+            }
+
+            //Verificacion sobre la marca
+            var marcaExiste = await _context.inv_persona.FindAsync(createDto.IdMarca);
+            if (marcaExiste == null)
+            {
+                return NotFound($"La persona con el ID {createDto.IdMarca} no fue encontrado.");
+            }
+
             // añade la entidad al contexto
             _context.inv_ensamble.Add(ensamble);
             // guardar los datos en la basee de datos
             await _context.SaveChangesAsync();
             //retorna lo guardado
-            return CreatedAtAction(nameof(GetId), new { id = ensamble.id }, ensamble);
+            return CreatedAtAction(nameof(GetId), new { id = ensamble.Id }, ensamble);
         }
 
 
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, EnsambleCreateDto updateDto)
         {
-            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.id == id);
+            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == id);
+
+            //Verificacion de ElemenType
+            var elementoExiste = await _context.inv_elementType.FindAsync(updateDto.IdElementType);
+            if (elementoExiste == null)
+            {
+                return NotFound($"El tipo de elemento con el ID {updateDto.IdElementType} no fue encontrado.");
+            }
+
+            //Verificacion sobre la marca
+            var marcaExiste = await _context.inv_persona.FindAsync(updateDto.IdMarca);
+            if (marcaExiste == null)
+            {
+                return NotFound($"La persona con el ID {updateDto.IdMarca} no fue encontrado.");
+            }
 
             ensamble = _mapper.Map(updateDto, ensamble);
 
             _context.inv_ensamble.Update(ensamble);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetId), new { ensamble.id }, ensamble);
+            return CreatedAtAction(nameof(GetId), new { ensamble.Id }, ensamble);
 
         }
 

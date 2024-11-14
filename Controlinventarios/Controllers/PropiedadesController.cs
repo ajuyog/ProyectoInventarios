@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Controlinventarios.Dto;
 using Controlinventarios.Model;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
@@ -53,6 +54,13 @@ namespace Controlinventarios.Controllers
             // el dto verifica la tabla
             var propiedad = _mapper.Map<Propiedades>(createDto);
 
+            // Verificacion de que existe el ensasmble
+            var ensambleExiste = await _context.inv_ensamble.FindAsync(createDto.IdEnsamble);
+            if (ensambleExiste == null)
+            {
+                return NotFound($"El ensamble con ID {createDto.IdEnsamble} no fue encontrado.");
+            }
+
             // añade la entidad al contexto
             _context.inv_propiedades.Add(propiedad);
             // guardar los datos en la basee de datos
@@ -66,6 +74,13 @@ namespace Controlinventarios.Controllers
         public async Task<ActionResult> Update(int id, PropiedadesCreateDto updateDto)
         {
             var propiedad = await _context.inv_propiedades.FirstOrDefaultAsync(x => x.id == id);
+
+            //Verificacion del id Ensamble
+            var ensambleExiste = await _context.inv_ensamble.FindAsync(updateDto.IdEnsamble);
+            if (ensambleExiste == null)
+            {
+                return NotFound($"El ensamble con ID {updateDto.IdEnsamble} no fue encontrado.");
+            }
 
             propiedad = _mapper.Map(updateDto, propiedad);
 
