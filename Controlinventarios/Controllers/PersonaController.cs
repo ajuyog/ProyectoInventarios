@@ -58,7 +58,7 @@ namespace Controlinventarios.Controllers
             var areaExiste = await _context.inv_area.FindAsync(createDto.IdArea);
             if (areaExiste == null)
             {
-                return NotFound($"El tipo de elemento con el ID {createDto.IdArea} no fue encontrado.");
+                return NotFound($"El area con el ID {createDto.IdArea} no fue encontrado.");
             }
 
             // añade la entidad al contexto
@@ -79,7 +79,7 @@ namespace Controlinventarios.Controllers
             var areaExiste = await _context.inv_area.FindAsync(updateDto.IdArea);
             if (areaExiste == null)
             {
-                return NotFound($"El tipo de elemento con el ID {updateDto.IdArea} no fue encontrado.");
+                return NotFound($"El area con el ID {updateDto.IdArea} no fue encontrado.");
             }
 
             persona = _mapper.Map(updateDto, persona);

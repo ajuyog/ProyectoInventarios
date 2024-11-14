@@ -99,7 +99,7 @@ namespace Controlinventarios.Controllers
             var marcaExiste = await _context.inv_persona.FindAsync(updateDto.IdMarca);
             if (marcaExiste == null)
             {
-                return NotFound($"La persona con el ID {updateDto.IdMarca} no fue encontrado.");
+                return NotFound($"La marca con el ID {updateDto.IdMarca} no fue encontrado.");
             }
 
             ensamble = _mapper.Map(updateDto, ensamble);
