@@ -28,8 +28,42 @@ namespace Controlinventarios.Controllers
         [HttpGet]
         public async Task<ActionResult<List<PersonaDto>>> Get()
         {
-            var persona = await _context.inv_persona.ToListAsync();
-            var personaDtos = _mapper.Map<List<PersonaDto>>(persona);
+            var personas = await _context.inv_persona.ToListAsync();
+
+            if (personas == null)
+            {
+                return BadRequest("No se encontraron registros de personas.");
+            }
+
+            var personaDtos = new List<PersonaDto>();
+
+            foreach (var persona in personas)
+            {
+                var areaName = await _context.inv_area.FirstOrDefaultAsync(o => o.id == persona.IdArea);
+                if (areaName == null)
+                {
+                    return BadRequest("El area no se encontro");
+                }
+
+                var user = await _context.aspnetusers.FirstOrDefaultAsync(u => u.Id == persona.userId);
+                if (user == null)
+                {
+                    return BadRequest("El usuario no existe");
+                }
+
+                var personaDto = new PersonaDto
+                {
+                    id = persona.id,
+                    userId = persona.userId,
+                    IdArea = persona.IdArea,
+                    identificacion = persona.identificacion,
+                    Estado = persona.Estado,
+                    UserName = user.UserName,
+                    AreaName = areaName.Nombre,
+                };
+
+                personaDtos.Add(personaDto);
+            }
 
             return Ok(personaDtos);
         }
