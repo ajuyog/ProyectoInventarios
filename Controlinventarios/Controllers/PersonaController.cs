@@ -68,7 +68,6 @@ namespace Controlinventarios.Controllers
             return Ok(personaDtos);
         }
 
-
         [HttpGet("{id}")]
         public async Task<ActionResult<PersonaDto>> GetId(int id)
         {
@@ -77,8 +76,8 @@ namespace Controlinventarios.Controllers
             {
                 return BadRequest($"No existe el id: {id}");
             }
-            var areaDto = _mapper.Map<PersonaDto>(persona);
-            return Ok(areaDto);
+            var personaDto = _mapper.Map<PersonaDto>(persona);
+            return Ok(personaDto);
         }
 
 

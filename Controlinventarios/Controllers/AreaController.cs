@@ -35,14 +35,14 @@ namespace Controlinventarios.Controllers
             return Ok(areaDtos);
         }
 
-        
-        [HttpGet("{id}")]
-        public async Task<ActionResult<AreaDto>> GetId(int id)
+
+        [HttpGet("{nombre}")]
+        public async Task<ActionResult<AreaDto>> GetId(string nombre)
         {
-            var area = await _context.inv_area.FirstOrDefaultAsync(x => x.id == id);
+            var area = await _context.inv_area.FirstOrDefaultAsync(x => x.Nombre == nombre);
             if (area == null)
             {
-                return BadRequest($"No existe el id: {id}");
+                return BadRequest($"No existe el nombre: {nombre}");
             }
             var areaDto = _mapper.Map<AreaDto>(area);
             return Ok(areaDto);
