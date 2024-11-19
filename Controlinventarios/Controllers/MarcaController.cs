@@ -36,14 +36,15 @@ namespace Controlinventarios.Controllers
         }
 
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<MarcaDto>> GetId(int id)
+        [HttpGet("{nombre}")]
+        public async Task<ActionResult<MarcaDto>> GetId(string nombre)
         {
-            var marca = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == id);
+            var marca = await _context.inv_marca.FirstOrDefaultAsync(x => x.Nombre == nombre);
             if (marca == null)
             {
-                return BadRequest($"No existe el id: {id}");
+                return BadRequest($"No existe la marca: {nombre}");
             }
+
             var marcaDto = _mapper.Map<MarcaDto>(marca);
             return Ok(marcaDto);
         }
