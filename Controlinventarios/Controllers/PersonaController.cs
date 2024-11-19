@@ -45,7 +45,7 @@ namespace Controlinventarios.Controllers
                     return BadRequest("El area no se encontro");
                 }
 
-                var user = await _context.aspnetusers.FirstOrDefaultAsync(u => u.Id == persona.userId);
+                var user = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == persona.userId);
                 if (user == null)
                 {
                     return BadRequest("El usuario no existe");
@@ -71,14 +71,44 @@ namespace Controlinventarios.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<PersonaDto>> GetId(int id)
         {
+            // Verifica si la persona existe
             var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.id == id);
+
             if (persona == null)
             {
                 return BadRequest($"No existe el id: {id}");
             }
-            var personaDto = _mapper.Map<PersonaDto>(persona);
+
+            // Se verifica el area del usuario
+            var areaName = await _context.inv_area.FirstOrDefaultAsync(o => o.id == persona.IdArea);
+
+            if (areaName == null)
+            {
+                return BadRequest("El área no se encontró");
+            }
+
+            // Se verifica el nombre del usuario
+            var user = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == persona.userId);
+
+            if (user == null)
+            {
+                return BadRequest("El usuario no existe");
+            }
+
+            var personaDto = new PersonaDto
+            {
+                id = persona.id,
+                userId = persona.userId,
+                IdArea = persona.IdArea,
+                identificacion = persona.identificacion,
+                Estado = persona.Estado,
+                UserName = user.UserName,
+                AreaName = areaName.Nombre
+            };
+
             return Ok(personaDto);
         }
+
 
 
         [HttpPost]

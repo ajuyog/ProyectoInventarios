@@ -74,12 +74,29 @@ namespace Controlinventarios.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<FacturacionTMKDto>> GetId(int id)
         {
+
             var facturacion = await _context.inv_facturaciontmk.FirstOrDefaultAsync(x => x.Id == id);
             if (facturacion == null)
             {
                 return BadRequest($"No existe el id: {id}");
             }
-            var facturacionDto = _mapper.Map<FacturacionTMKDto>(facturacion);
+
+            var facturaName = await _context.inv_ensamble.FirstOrDefaultAsync(o => o.Id == facturacion.IdEnsamble);
+            if (facturaName == null)
+            {
+                return BadRequest($"No se encontró el ensamble para el id de facturación: {id}");
+            }
+
+            var facturacionDto = new FacturacionTMKDto
+            {
+                Id = facturacion.Id,
+                VlrNeto = facturacion.VlrNeto,
+                IdEnsamble = facturacion.IdEnsamble,
+                Descripcion = facturacion.Descripcion,
+                Fecha = facturacion.Fecha,
+                EnsambleName = facturaName.NumeroSerial
+            };
+
             return Ok(facturacionDto);
         }
 

@@ -108,20 +108,24 @@ namespace Controlinventarios.Controllers
         }
 
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
+        [HttpDelete("{IdEnsamble}")]
+        public async Task<ActionResult> Delete(int IdEnsamble)
         {
-            var asignacion = await _context.inv_asignacion.FindAsync(id);
+            // Se busca el idensamble
+            var asignacion = await _context.inv_asignacion.FindAsync(IdEnsamble);
 
+            //En caso de que no exista
             if (asignacion == null)
             {
-                return BadRequest($"No existe el id: {id}");
+                return BadRequest($"No existe el id: {IdEnsamble}");
             }
 
+            //Elimina el ensamble 
             _context.inv_asignacion.Remove(asignacion);
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return Ok($"Se elimino el ensamble: {IdEnsamble}");
         }
+
     }
 }

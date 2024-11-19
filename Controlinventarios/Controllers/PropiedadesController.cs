@@ -74,14 +74,34 @@ namespace Controlinventarios.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<PropiedadesDto>> GetId(int id)
         {
+            // Buscar la propiedad con el id dado
             var propiedad = await _context.inv_propiedades.FirstOrDefaultAsync(x => x.id == id);
+
             if (propiedad == null)
             {
                 return BadRequest($"No existe el id: {id}");
             }
-            var propiedadDto = _mapper.Map<PropiedadesDto>(propiedad);
+
+            // Buscar el ensamble correspondiente
+            var ensambleName = await _context.inv_ensamble.FirstOrDefaultAsync(o => o.Id == propiedad.IdEnsamble);
+
+            if (ensambleName == null)
+            {
+                return BadRequest($"No se encontró el ensamble para la propiedad: {id}");
+            }
+
+            // Crear el DTO de la propiedad
+            var propiedadDto = new PropiedadesDto
+            {
+                id = propiedad.id,
+                Propiedad = propiedad.Propiedad,
+                IdEnsamble = propiedad.IdEnsamble,
+                EnsambleName = ensambleName.NumeroSerial
+            };
+
             return Ok(propiedadDto);
         }
+
 
 
         [HttpPost]
