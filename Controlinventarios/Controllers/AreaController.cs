@@ -42,7 +42,7 @@ namespace Controlinventarios.Controllers
             var area = await _context.inv_area.FirstOrDefaultAsync(x => x.Nombre == nombre);
             if (area == null)
             {
-                return BadRequest($"No existe el nombre: {nombre}");
+                return BadRequest($"No existe el area: {nombre}");
             }
             var areaDto = _mapper.Map<AreaDto>(area);
             return Ok(areaDto);

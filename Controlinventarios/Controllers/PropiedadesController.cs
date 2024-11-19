@@ -25,13 +25,49 @@ namespace Controlinventarios.Controllers
         }
 
 
+        //[HttpGet]
+        //public async Task<ActionResult<List<PropiedadesDto>>> Get()
+        //{
+        //    var propiedad = await _context.inv_propiedades.ToListAsync();
+        //    var propiedadDtos = _mapper.Map<List<PropiedadesDto>>(propiedad);
+
+        //    return Ok(propiedadDtos);
+        //}
+
         [HttpGet]
         public async Task<ActionResult<List<PropiedadesDto>>> Get()
         {
-            var propiedad = await _context.inv_propiedades.ToListAsync();
-            var propiedadDtos = _mapper.Map<List<PropiedadesDto>>(propiedad);
+            var propiedades = await _context.inv_propiedades.ToListAsync();
 
-            return Ok(propiedadDtos);
+            if (propiedades == null)
+            {
+                return BadRequest("No se encontraron propiedades.");
+            }
+
+            var propiedadesDtos = new List<PropiedadesDto>();
+
+            foreach (var propiedad in propiedades)
+            {
+               
+                var ensambleName = await _context.inv_ensamble.FirstOrDefaultAsync(o => o.Id == propiedad.IdEnsamble);
+
+                if (ensambleName == null)
+                {
+                    return BadRequest($"No se encontró el ensamble para la propiedad: {ensambleName}");
+                }
+
+                var propiedadDto = new PropiedadesDto
+                {
+                    id = propiedad.id,
+                    Propiedad = propiedad.Propiedad,
+                    IdEnsamble = propiedad.IdEnsamble,
+                    EnsambleName = ensambleName.NumeroSerial
+                };
+
+                propiedadesDtos.Add(propiedadDto);
+            }
+
+            return Ok(propiedadesDtos);
         }
 
 

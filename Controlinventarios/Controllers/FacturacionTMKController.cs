@@ -24,11 +24,49 @@ namespace Controlinventarios.Controllers
         }
 
 
+        //[HttpGet]
+        //public async Task<ActionResult<List<FacturacionTMKDto>>> Get()
+        //{
+        //    var facturacion = await _context.inv_facturaciontmk.ToListAsync();
+        //    var facturacionDtos = _mapper.Map<List<FacturacionTMKDto>>(facturacion);
+
+        //    return Ok(facturacionDtos);
+        //}
+
         [HttpGet]
         public async Task<ActionResult<List<FacturacionTMKDto>>> Get()
         {
             var facturacion = await _context.inv_facturaciontmk.ToListAsync();
-            var facturacionDtos = _mapper.Map<List<FacturacionTMKDto>>(facturacion);
+
+            if (facturacion == null)
+            {
+                return BadRequest("No se encontro la factura.");
+            }
+
+            var facturacionDtos = new List<FacturacionTMKDto>();
+
+            foreach (var factura in facturacion)
+            {
+
+                var facturaName = await _context.inv_ensamble.FirstOrDefaultAsync(o => o.Id == factura.IdEnsamble);
+
+                if (facturaName == null)
+                {
+                    return BadRequest($"No se encontró el ensamble para la propiedad: {facturaName}");
+                }
+
+                var facturaDto = new FacturacionTMKDto
+                {
+                    Id = factura.Id,
+                    VlrNeto = factura.VlrNeto,
+                    IdEnsamble = factura.IdEnsamble,
+                    Descripcion = factura.Descripcion,
+                    Fecha = factura.Fecha,
+                    EnsambleName = facturaName.NumeroSerial
+                };
+
+                facturacionDtos.Add(facturaDto);
+            }
 
             return Ok(facturacionDtos);
         }

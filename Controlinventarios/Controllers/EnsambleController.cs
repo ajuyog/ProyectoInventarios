@@ -127,6 +127,5 @@ namespace Controlinventarios.Controllers
 
             return Ok();
         }
-
     }
 }
