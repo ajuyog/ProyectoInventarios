@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Configuration;
 using System.Threading.Tasks;
 
 namespace Controlinventarios.Controllers
@@ -27,14 +29,55 @@ namespace Controlinventarios.Controllers
         }
 
 
+        //[HttpGet]
+        //public async Task<ActionResult<List<AsignacionDto>>> Get()
+        //{
+        //    var asignacion = await _context.inv_asignacion.ToListAsync();
+        //    var asignacionDtos = _mapper.Map<List<AsignacionDto>>(asignacion);
+
+        //    return Ok(asignacionDtos);
+        //}
+
         [HttpGet]
         public async Task<ActionResult<List<AsignacionDto>>> Get()
         {
-            var asignacion = await _context.inv_asignacion.ToListAsync();
-            var asignacionDtos = _mapper.Map<List<AsignacionDto>>(asignacion);
+            var asignaciones = await _context.inv_asignacion.ToListAsync();
+
+            if (asignaciones == null)
+            {
+                return BadRequest("No se encontraron elementos asignados.");
+            }
+            
+            var asignacionDtos = new List<AsignacionDto>();
+
+            foreach (var asignacion in asignaciones)
+            {
+                var identificacionPersona = await _context.inv_persona.FirstOrDefaultAsync(o => o.id == asignacion.IdPersona);
+                if (identificacionPersona == null)
+                {
+                    return BadRequest("El nombre no se encontro");
+                }
+
+                var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == asignacion.IdEnsamble);
+                if (ensamble == null)
+                {
+                    return BadRequest("El ensamble no se encontro");
+                }
+
+                var asignacionDto = new AsignacionDto
+                {
+                    IdPersona = asignacion.IdPersona,
+                    IdEnsamble = asignacion.IdEnsamble,
+                    IdentificacionPersona = identificacionPersona.userId,
+                    Numeroserial = ensamble.NumeroSerial
+                };
+
+                asignacionDtos.Add(asignacionDto);
+            }
 
             return Ok(asignacionDtos);
         }
+
 
 
         [HttpGet("{id}")]
@@ -111,16 +154,13 @@ namespace Controlinventarios.Controllers
         [HttpDelete("{IdEnsamble}")]
         public async Task<ActionResult> Delete(int IdEnsamble)
         {
-            // Se busca el idensamble
             var asignacion = await _context.inv_asignacion.FindAsync(IdEnsamble);
 
-            //En caso de que no exista
             if (asignacion == null)
             {
-                return BadRequest($"No existe el id: {IdEnsamble}");
+                return BadRequest($"No existe el ensamble: {IdEnsamble}");
             }
 
-            //Elimina el ensamble 
             _context.inv_asignacion.Remove(asignacion);
             await _context.SaveChangesAsync();
 

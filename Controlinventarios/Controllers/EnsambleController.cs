@@ -1,13 +1,8 @@
 ﻿using AutoMapper;
 using Controlinventarios.Dto;
 using Controlinventarios.Model;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 
 namespace Controlinventarios.Controllers
 {
@@ -27,31 +22,88 @@ namespace Controlinventarios.Controllers
             _mapper = mapper;
         }
 
+        //[HttpGet]
+        //public async Task<ActionResult<List<EnsambleDto>>> Get()
+        //{
+
+        //    var ensamble = await _context.inv_ensamble.ToListAsync();
+        //    var ensambleDtos = _mapper.Map<List<EnsambleDto>>(ensamble);
+
+        //    return Ok(ensambleDtos);
+        //}
+
+
         [HttpGet]
         public async Task<ActionResult<List<EnsambleDto>>> Get()
         {
-
             var ensamble = await _context.inv_ensamble.ToListAsync();
-            var ensambleDtos = _mapper.Map<List<EnsambleDto>>(ensamble);
 
-            return Ok(ensambleDtos);
+            if (ensamble == null)
+            {
+                return BadRequest("No existe ningun ensamble");
+            }
+
+            var EnsambleDtos = new List<EnsambleDto>();
+
+            foreach (var ensambles in ensamble)
+            {
+                var elementype = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == ensambles.Id);
+                if (elementype == null)
+                {
+                    return BadRequest("No tiene ningun tipo de elemento");
+                }
+
+                var ensambleDto = new EnsambleDto
+                {
+                    Id = ensambles.Id,
+                    IdElementType = ensambles.IdElementType,
+                    IdMarca = ensambles.IdMarca,
+                    NumeroSerial = ensambles.NumeroSerial,
+                    Estado = ensambles.Estado,
+                    Descripcion = ensambles.Descripcion,
+                    Renting = ensambles.Renting,
+                    TipoElemento = elementype.Nombre,
+                };
+
+                EnsambleDtos.Add(ensambleDto);
+            }
+
+            return Ok(EnsambleDtos);
         }
-
 
 
         [HttpGet("{id}")]
         public async Task<ActionResult<EnsambleDto>> GetId(int id)
         {
-
             var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == id);
+
             if (ensamble == null)
             {
                 return BadRequest($"No existe el id: {id}");
             }
 
-            var ensambleDto = _mapper.Map<EnsambleDto>(ensamble);
+            var elementype = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == ensamble.IdElementType);
+
+            if (elementype == null)
+            {
+                return BadRequest("No tiene ningun tipo de elemento");
+            }
+
+            var ensambleDto = new EnsambleDto
+            {
+                Id = ensamble.Id,
+                IdElementType = ensamble.IdElementType,
+                IdMarca = ensamble.IdMarca,
+                NumeroSerial = ensamble.NumeroSerial,
+                Estado = ensamble.Estado,
+                Descripcion = ensamble.Descripcion,
+                Renting = ensamble.Renting,
+                TipoElemento = elementype.Nombre,  
+            };
+
             return Ok(ensambleDto);
         }
+
 
 
         [HttpPost]

@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
-using Controlinventarios; 
+using Controlinventarios;
+using Controlinventarios.Dto;
 
 namespace Controlinventarios.Model
 {
@@ -16,6 +17,7 @@ namespace Controlinventarios.Model
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //modelBuilder.Entity<CentroDeCostoDto>().HasKey(t => t.VlrNeto);
             modelBuilder.Entity<Asignacion>().HasKey(t => t.IdPersona);
             modelBuilder.Entity<Ensamble>().HasKey(t => t.Id);
             modelBuilder.Entity<Propiedades>().HasKey(t => t.id);
@@ -34,6 +36,5 @@ namespace Controlinventarios.Model
         public virtual DbSet<FacturacionTMK> inv_facturaciontmk { get; set; }
         public virtual DbSet<Marca> inv_marca { get; set; }
         public virtual DbSet<AspnetUsers> aspnetusers { get; set; }
-
     }
 }

@@ -34,12 +34,10 @@ namespace Controlinventarios.Utilidad
             CreateMap<AsignacionCreateDto, Asignacion>().ReverseMap();
             CreateMap<Asignacion, AsignacionDto>().ReverseMap();
 
-            //CreateMap<FacturacionTMKCreateDto, FacturacionTMK>().ReverseMap();
-            //CreateMap<FacturacionTMK, FacturacionTMKDto>().ReverseMap();
-
             CreateMap<FacturacionTMKCreateDto, FacturacionTMK>().ReverseMap();
             CreateMap<FacturacionTMK, FacturacionTMKDto>().ReverseMap();
-            
+            CreateMap<FacturacionTMK, CentroDeCostoDto>().ReverseMap();
+
             CreateMap<MarcaCreateDto, Marca>().ReverseMap();
             CreateMap<Marca, MarcaDto>().ReverseMap();
             
