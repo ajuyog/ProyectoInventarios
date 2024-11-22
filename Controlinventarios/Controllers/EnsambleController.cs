@@ -113,17 +113,19 @@ namespace Controlinventarios.Controllers
             var ensamble = _mapper.Map<Ensamble>(createDto);
 
             //Verificacion de ElemenType
-            var elementoExiste = await _context.inv_elementType.FindAsync(createDto.IdElementType);
+            var elementoExiste = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == createDto.IdElementType);
+
             if (elementoExiste == null)
             {
                 return NotFound($"El tipo de elemento con el ID {createDto.IdElementType} no fue encontrado.");
             }
 
             //Verificacion sobre la marca
-            var marcaExiste = await _context.inv_persona.FindAsync(createDto.IdMarca);
+            var marcaExiste = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == createDto.IdMarca);
+           
             if (marcaExiste == null)
             {
-                return NotFound($"La persona con el ID {createDto.IdMarca} no fue encontrado.");
+                return NotFound($"La marca con ID {createDto.IdMarca} no fue encontrado.");
             }
 
             // añade la entidad al contexto
