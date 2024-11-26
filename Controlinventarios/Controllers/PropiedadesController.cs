@@ -111,10 +111,10 @@ namespace Controlinventarios.Controllers
             var propiedad = _mapper.Map<Propiedades>(createDto);
 
             // Verificacion de que existe el ensasmble
-            var ensambleExiste = await _context.inv_ensamble.FindAsync(createDto.IdEnsamble);
+            var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
             if (ensambleExiste == null)
             {
-                return NotFound($"El ensamble con ID {createDto.IdEnsamble} no fue encontrado.");
+                return BadRequest($"El ensamble con ID {createDto.IdEnsamble} no fue encontrado.");
             }
 
             // añade la entidad al contexto
@@ -132,10 +132,10 @@ namespace Controlinventarios.Controllers
             var propiedad = await _context.inv_propiedades.FirstOrDefaultAsync(x => x.id == id);
 
             //Verificacion del id Ensamble
-            var ensambleExiste = await _context.inv_ensamble.FindAsync(updateDto.IdEnsamble);
+            var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == updateDto.IdEnsamble);
             if (ensambleExiste == null)
             {
-                return NotFound($"El ensamble con ID {updateDto.IdEnsamble} no fue encontrado.");
+                return BadRequest($"El ensamble con ID {updateDto.IdEnsamble} no fue encontrado.");
             }
 
             propiedad = _mapper.Map(updateDto, propiedad);

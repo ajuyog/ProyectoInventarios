@@ -47,6 +47,7 @@ namespace Controlinventarios.Controllers
             return Ok(elementoDto);
         }
 
+
         [HttpPost]
         public async Task<ActionResult> Post(ElementTypeCreateDto createDto)
         {
@@ -59,6 +60,8 @@ namespace Controlinventarios.Controllers
             //retorna lo guardado
             return CreatedAtAction(nameof(GetId), new { id = elemento.id }, elemento);
         }
+
+
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, ElementTypeCreateDto updateDto)
         {
@@ -72,6 +75,8 @@ namespace Controlinventarios.Controllers
             return CreatedAtAction(nameof(GetId), new { elemento.id }, elemento);
 
         }
+
+
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {

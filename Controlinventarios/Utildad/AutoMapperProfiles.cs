@@ -43,6 +43,8 @@ namespace Controlinventarios.Utilidad
             
             CreateMap<AspnetUsers, AspnetUsersDto>().ReverseMap();
 
+            CreateMap<EmpresaCreateDto, Empresa>().ReverseMap();
+            CreateMap<Empresa, EmpresaDto>().ReverseMap();
         }
     }
 }

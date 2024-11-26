@@ -24,7 +24,7 @@ namespace Controlinventarios
             //services.AddDbContext<InventoryTIContext>(options =>
             //    options.UseSqlServer(connectionString));
 
-            var connectionStringMysql = Configuration.GetConnectionString("DefaultConnectionMySqlValuez");
+            var connectionStringMysql = Configuration.GetConnectionString("DefaultConnectionMySql");
             services.AddDbContext<InventoryTIContext>(options => options.UseMySql(connectionStringMysql, ServerVersion.AutoDetect(connectionStringMysql)));
 
             //var connectionStrinMysql = Configuration.GetConnectionString("DefaultConnectionMySql");

@@ -58,6 +58,12 @@ namespace Controlinventarios.Controllers
                     return BadRequest("No tiene ningun tipo de elemento");
                 }
 
+                var marca = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == ensambles.IdMarca);
+                if (marca == null) 
+                {
+                    return BadRequest("No se encontraron marcas");
+                }
+
                 var ensambleDto = new EnsambleDto
                 {
                     Id = ensambles.Id,
@@ -68,6 +74,7 @@ namespace Controlinventarios.Controllers
                     Descripcion = ensambles.Descripcion,
                     Renting = ensambles.Renting,
                     TipoElemento = elementype.Nombre,
+                    NombreMarca = marca.Nombre
                 };
 
                 EnsambleDtos.Add(ensambleDto);
@@ -94,6 +101,12 @@ namespace Controlinventarios.Controllers
                 return BadRequest("No tiene ningun tipo de elemento");
             }
 
+            var marca = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == ensamble.IdMarca);
+            if (marca == null)
+            {
+                return BadRequest("No se encontraron marcas");
+            }
+
             var ensambleDto = new EnsambleDto
             {
                 Id = ensamble.Id,
@@ -103,7 +116,8 @@ namespace Controlinventarios.Controllers
                 Estado = ensamble.Estado,
                 Descripcion = ensamble.Descripcion,
                 Renting = ensamble.Renting,
-                TipoElemento = elementype.Nombre,  
+                TipoElemento = elementype.Nombre,
+                NombreMarca = marca.Nombre
             };
 
             return Ok(ensambleDto);

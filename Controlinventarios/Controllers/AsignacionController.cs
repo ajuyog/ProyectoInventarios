@@ -100,17 +100,17 @@ namespace Controlinventarios.Controllers
             var asignacion = _mapper.Map<Asignacion>(createDto);
 
             //Verificacion del id de usuario
-            var usuarioExiste = await _context.inv_persona.FindAsync(createDto.idPersona);
+            var usuarioExiste = await _context.inv_persona.FirstOrDefaultAsync(x => x.id == createDto.idPersona);
             if (usuarioExiste == null)
             {
-                return NotFound($"La persona con el ID {createDto.idPersona} no fue encontrado.");
+                return BadRequest($"La persona con el ID {createDto.idPersona} no fue encontrado.");
             }
 
             //Verificacion del id Ensamble
-            var ensambleExiste = await _context.inv_ensamble.FindAsync(createDto.idEnsamble);
+            var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == createDto.idEnsamble);
             if (ensambleExiste == null)
             {
-                return NotFound($"El ensamble con ID {createDto.idEnsamble} no fue encontrado.");
+                return BadRequest($"El ensamble con ID {createDto.idEnsamble} no fue encontrado.");
             }
 
             // añade la entidad al contexto
@@ -128,14 +128,14 @@ namespace Controlinventarios.Controllers
             var asignacion = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdPersona == id);
 
             //Verificacion del id de usuario
-            var usuarioExiste = await _context.inv_persona.FindAsync(updateDto.idPersona);
+            var usuarioExiste = await _context.inv_persona.FirstOrDefaultAsync(x => x.id == updateDto.idPersona);
             if (usuarioExiste == null)
             {
                 return NotFound($"La persona con el ID {updateDto.idPersona} no fue encontrado.");
             }
 
             //Verificacion del id Ensamble
-            var ensambleExiste = await _context.inv_ensamble.FindAsync(updateDto.idEnsamble);
+            var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == updateDto.idPersona);
             if (ensambleExiste == null)
             {
                 return NotFound($"El ensamble con ID {updateDto.idEnsamble} no fue encontrado.");

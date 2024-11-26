@@ -108,10 +108,10 @@ namespace Controlinventarios.Controllers
             var facturacion = _mapper.Map<FacturacionTMK>(createDto);
 
             //Verificacion del id Ensamble
-            var ensambleExiste = await _context.inv_ensamble.FindAsync(createDto.IdEnsamble);
+            var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
             if (ensambleExiste == null)
             {
-                return NotFound($"El ensamble con ID {createDto.IdEnsamble} no fue encontrado.");
+                return BadRequest($"El ensamble con ID {createDto.IdEnsamble} no fue encontrado.");
             }
 
             // añade la entidad al contexto
@@ -129,10 +129,10 @@ namespace Controlinventarios.Controllers
             var facturacion = await _context.inv_facturaciontmk.FirstOrDefaultAsync(x => x.Id == id);
 
             //Verificacion del id Ensamble
-            var ensambleExiste = await _context.inv_ensamble.FindAsync(updateDto.IdEnsamble);
+            var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == updateDto.IdEnsamble);
             if (ensambleExiste == null)
             {
-                return NotFound($"El ensamble con ID {updateDto.IdEnsamble} no fue encontrado.");
+                return BadRequest($"El ensamble con ID {updateDto.IdEnsamble} no fue encontrado.");
             }
 
             facturacion = _mapper.Map(updateDto, facturacion);
