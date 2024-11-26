@@ -27,6 +27,11 @@ namespace Controlinventarios.Controllers
         //{
 
         //    var ensamble = await _context.inv_ensamble.ToListAsync();
+        //    if (ensamble == null)
+        //    {
+        //        return BadRequest($"No se encontraron datos en la tabla ensamble");
+        //    }
+
         //    var ensambleDtos = _mapper.Map<List<EnsambleDto>>(ensamble);
 
         //    return Ok(ensambleDtos);
@@ -47,7 +52,7 @@ namespace Controlinventarios.Controllers
 
             foreach (var ensambles in ensamble)
             {
-                var elementype = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == ensambles.Id);
+                var elementype = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == ensambles.IdElementType);
                 if (elementype == null)
                 {
                     return BadRequest("No tiene ningun tipo de elemento");
@@ -141,19 +146,23 @@ namespace Controlinventarios.Controllers
         public async Task<ActionResult> Update(int id, EnsambleCreateDto updateDto)
         {
             var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == id);
+            if (ensamble == null) 
+            {
+                return BadRequest($"No se encontro el {id}.");
+            }
 
             //Verificacion de ElemenType
-            var elementoExiste = await _context.inv_elementType.FindAsync(updateDto.IdElementType);
+            var elementoExiste = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == updateDto.IdElementType);
             if (elementoExiste == null)
             {
-                return NotFound($"El tipo de elemento con el ID {updateDto.IdElementType} no fue encontrado.");
+                return BadRequest($"El tipo de elemento con el ID {updateDto.IdElementType} no fue encontrado.");
             }
 
             //Verificacion sobre la marca
-            var marcaExiste = await _context.inv_persona.FindAsync(updateDto.IdMarca);
+            var marcaExiste = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == updateDto.IdMarca);
             if (marcaExiste == null)
             {
-                return NotFound($"La marca con el ID {updateDto.IdMarca} no fue encontrado.");
+                return BadRequest($"La marca con el ID {updateDto.IdMarca} no fue encontrado.");
             }
 
             ensamble = _mapper.Map(updateDto, ensamble);
@@ -165,7 +174,7 @@ namespace Controlinventarios.Controllers
 
         }
 
-
+   
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {

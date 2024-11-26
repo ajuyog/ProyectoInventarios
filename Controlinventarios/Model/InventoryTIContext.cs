@@ -36,5 +36,6 @@ namespace Controlinventarios.Model
         public virtual DbSet<FacturacionTMK> inv_facturaciontmk { get; set; }
         public virtual DbSet<Marca> inv_marca { get; set; }
         public virtual DbSet<AspnetUsers> aspnetusers { get; set; }
+        public virtual DbSet<Empresa> inv_empresa { get; set; }
     }
 }
