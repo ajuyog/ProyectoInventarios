@@ -14,5 +14,7 @@
 
         public string EnsambleName { get; set; }
 
+        public string NombreArea { get; set; }
+
     }
 }

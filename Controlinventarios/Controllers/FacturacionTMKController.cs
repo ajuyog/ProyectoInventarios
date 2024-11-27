@@ -71,6 +71,76 @@ namespace Controlinventarios.Controllers
             return Ok(facturacionDtos);
         }
 
+        [HttpGet("Objetos renting")]
+        public async Task<ActionResult<List<EnsambleDto>>> Get1()
+        {
+            var facturacion = await _context.inv_ensamble.ToListAsync();
+
+            if (facturacion == null)
+            {
+                return BadRequest("No se encontraron ensambles");
+            }
+
+            var facturacionDtosTrue = new List<EnsambleDto>();
+            var facturacionDtosFalse = new List<EnsambleDto>();
+
+            foreach (var factura in facturacion)
+            {
+                //se verifica el campo falso
+                if (factura.Renting == false)
+                {
+                    var facturaName = await _context.inv_facturaciontmk.FirstOrDefaultAsync(x => x.Id == factura.IdElementType);
+                    if (facturaName == null)
+                    {
+                        return BadRequest($"No se encontro la factura para el ensamble");   
+                    }
+
+                    var facturaDto = new EnsambleDto
+                    {
+                        Id = factura.Id,
+                        IdElementType = factura.IdElementType,
+                        IdMarca = factura.IdMarca,
+                        NumeroSerial = factura.NumeroSerial,
+                        Estado = factura.Estado,
+                        Descripcion = factura.Descripcion,
+                        Renting = factura.Renting,
+                        NumeroFactura = facturaName.Descripcion
+                    };
+                 
+                    facturacionDtosFalse.Add(facturaDto);
+                }
+                 //se verifica el campo true
+                if (factura.Renting == true)
+                {
+                   
+                    var facturaName = await _context.inv_facturaciontmk.FirstOrDefaultAsync(x => x.Id == factura.IdElementType);
+
+                    if (facturaName == null)
+                    {
+                        return BadRequest($"No se encontró la factura para el ensamble");
+                    }
+
+                  
+                    var facturaDto = new EnsambleDto
+                    {
+                        Id = factura.Id,
+                        IdElementType = factura.IdElementType,
+                        IdMarca = factura.IdMarca,
+                        NumeroSerial = factura.NumeroSerial,
+                        Estado = factura.Estado,
+                        Descripcion = factura.Descripcion,
+                        Renting = factura.Renting,
+                        NumeroFactura = facturaName.Descripcion
+                    };
+
+                    facturacionDtosTrue.Add(facturaDto);
+                }
+            }
+            // se muestran las dos listas 
+            return Ok(new { RentingTrue = facturacionDtosTrue, RentingFalse = facturacionDtosFalse });
+        }
+
+
         [HttpGet("{id}")]
         public async Task<ActionResult<FacturacionTMKDto>> GetId(int id)
         {

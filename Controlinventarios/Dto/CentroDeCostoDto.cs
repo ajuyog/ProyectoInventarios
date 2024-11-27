@@ -8,6 +8,7 @@ namespace Controlinventarios.Dto
         public string Descripcion { get; set; }
         public float VlrNeto { get; set; }
         public int IdEnsamble { get; set; }
+        public int IdArea { get; set; }
         public string NumeroSerial { get; set; }
         public string NombreArea { get; set; }
     }

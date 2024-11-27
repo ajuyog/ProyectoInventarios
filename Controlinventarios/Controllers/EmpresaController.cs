@@ -62,7 +62,7 @@ namespace Controlinventarios.Controllers
             // guardar los datos en la basee de datos
             await _context.SaveChangesAsync();
             //retorna lo guardado
-            return CreatedAtAction(nameof(GetId), new { id = empresa.id }, empresa);
+            return CreatedAtAction(nameof(GetId), new { Nombre = empresa.Nombre }, empresa);
         }
 
 
@@ -76,8 +76,24 @@ namespace Controlinventarios.Controllers
             _context.inv_empresa.Update(empresa);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetId), new { empresa.id }, empresa);
+            return CreatedAtAction(nameof(GetId), new { empresa.Nombre }, empresa);
 
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var empresa = await _context.inv_empresa.FindAsync(id);
+
+            if (empresa == null)
+            {
+                return BadRequest($"No existe el id: {id}");
+            }
+
+            _context.inv_empresa.Remove(empresa);
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
     }
 }

@@ -39,11 +39,11 @@ namespace Controlinventarios.Controllers
                     return BadRequest("No se encontraron ensambles");
                 }
 
-                //var nombreArea = await _context.inv_area.FirstOrDefaultAsync(x => x.id == facturas.Id);
-                //if (nombreArea == null) 
-                //{
-                //    return BadRequest("No se encontraron areas");
-                //}
+                var nombreArea = await _context.inv_area.FirstOrDefaultAsync(x => x.id == facturas.Id);
+                if (nombreArea == null) 
+                {
+                    return BadRequest("No se encontraron areas");
+                }
 
                 var facturaDto = new CentroDeCostoDto
                 {
@@ -51,41 +51,12 @@ namespace Controlinventarios.Controllers
                     VlrNeto = facturas.VlrNeto,
                     IdEnsamble = facturas.IdEnsamble,
                     NumeroSerial = numeroSerial.NumeroSerial,
-                    //NombreArea = nombreArea.Nombre
+                    NombreArea = nombreArea.Nombre
                 };
                 facturaDtos.Add(facturaDto);
             }
             return Ok(facturaDtos);
         }
-
-
-        //[HttpGet("Get sin tabla")]
-        //public ActionResult<CentroDeCostoDto> GetCentroDeCosto()
-        //{
-        //    // Simulando la creación de un objeto CentroDeCostoDto
-        //    var centroDeCostoDto = new CentroDeCostoDto
-        //    {
-        //        Valor = new List<FacturacionTMKDto>
-        //{
-        //    new FacturacionTMKDto { Id = 1, Descripcion = "Factura A" },
-        //    new FacturacionTMKDto { Id = 2, Descripcion = "Factura B" }
-        //},
-        //        Equipo = new List<EnsambleDto>
-        //{
-        //    new EnsambleDto { Id = 1, NumeroSerial = "Equipo A" },
-        //    new EnsambleDto { Id = 2, NumeroSerial = "Equipo B" }
-        //},
-        //        Area = new List<AreaDto>
-        //{
-        //    new AreaDto { id = 1, Nombre = "Área 1" },
-        //    new AreaDto { id = 2, Nombre = "Área 2" }
-        //}
-        //    };
-
-        //    return Ok(centroDeCostoDto);
-        //}
-
-
 
         //[HttpGet("Factura")]
         //public async Task<ActionResult<List<CentroDeCostoDto>>> Get()
