@@ -51,6 +51,13 @@ namespace Controlinventarios.Controllers
                     return BadRequest("El usuario no existe");
                 }
 
+                var nombreEmpresa = await _context.inv_empresa.FirstOrDefaultAsync(x => x.id == persona.idEmpresa);
+                if (nombreEmpresa == null)
+                {
+                    return BadRequest("No se encontraron empresas");
+                }
+
+
                 var personaDto = new PersonaDto
                 {
                     id = persona.id,
@@ -60,6 +67,7 @@ namespace Controlinventarios.Controllers
                     Estado = persona.Estado,
                     UserName = user.UserName,
                     AreaName = areaName.Nombre,
+                    NombreEmpresa = nombreEmpresa.Nombre
                 };
 
                 personaDtos.Add(personaDto);

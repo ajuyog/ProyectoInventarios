@@ -52,11 +52,11 @@ namespace Controlinventarios.Controllers
 
             foreach (var asignacion in asignaciones)
             {
-                var identificacionPersona = await _context.inv_persona.FirstOrDefaultAsync(o => o.id == asignacion.IdPersona);
-                if (identificacionPersona == null)
-                {
-                    return BadRequest("El nombre no se encontro");
-                }
+                //var identificacionPersona = await _context.aspnetusers.FirstOrDefaultAsync(o => o.Id == asignacion.);
+                //if (identificacionPersona == null)
+                //{
+                //    return BadRequest("El nombre no se encontro");
+                //}
 
                 var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == asignacion.IdEnsamble);
                 if (ensamble == null)
@@ -68,11 +68,11 @@ namespace Controlinventarios.Controllers
                 {
                     IdPersona = asignacion.IdPersona,
                     IdEnsamble = asignacion.IdEnsamble,
-                    IdentificacionPersona = identificacionPersona.userId,
+                    /*IdentificacionPersona = identificacionPersona.userId*/
                     Numeroserial = ensamble.NumeroSerial
                 };
 
-                asignacionDtos.Add(asignacionDto);
+            asignacionDtos.Add(asignacionDto);
             }
 
             return Ok(asignacionDtos);
@@ -80,17 +80,18 @@ namespace Controlinventarios.Controllers
 
 
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<AsignacionDto>> GetId(int id)
+        [HttpGet("{idEnsamble}")]
+        public async Task<ActionResult<AsignacionDto>> GetId(int idEnsamble)
         {
-            var asignacion = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdPersona == id);
+            var asignacion = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdEnsamble == idEnsamble);
             if (asignacion == null)
             {
-                return BadRequest($"No existe el id: {id}");
+                return BadRequest($"No existe el id ensamble: {idEnsamble}");
             }
             var asignacionDto = _mapper.Map<AsignacionDto>(asignacion);
             return Ok(asignacionDto);
         }
+
 
 
         [HttpPost]

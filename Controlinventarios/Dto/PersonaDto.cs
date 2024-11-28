@@ -13,5 +13,6 @@ namespace Controlinventarios.Dto
         public int idEmpresa { get; set; }
         public string UserName { get; set; }
         public string AreaName { get; set; }
+        public string NombreEmpresa { get; set; }
     }
 }
