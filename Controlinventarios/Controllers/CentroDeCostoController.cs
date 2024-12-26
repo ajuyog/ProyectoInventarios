@@ -39,7 +39,7 @@ namespace Controlinventarios.Controllers
                     return BadRequest("No se encontraron ensambles");
                 }
 
-                var nombreArea = await _context.inv_area.FirstOrDefaultAsync(x => x.id == facturas.Id);
+                var nombreArea = await _context.inv_area.FirstOrDefaultAsync();
                 if (nombreArea == null) 
                 {
                     return BadRequest("No se encontraron areas");
@@ -49,7 +49,8 @@ namespace Controlinventarios.Controllers
                 {
                     Descripcion = facturas.Descripcion,
                     VlrNeto = facturas.VlrNeto,
-                    IdEnsamble = facturas.IdEnsamble,
+                    //IdEnsamble = facturas.IdEnsamble,
+                    //IdArea = nombreArea.id,
                     NumeroSerial = numeroSerial.NumeroSerial,
                     NombreArea = nombreArea.Nombre
                 };
@@ -58,138 +59,119 @@ namespace Controlinventarios.Controllers
             return Ok(facturaDtos);
         }
 
-        //[HttpGet("Factura")]
-        //public async Task<ActionResult<List<CentroDeCostoDto>>> Get()
+        [HttpGet("linq4")]
+        public async Task<ActionResult<List<CentroDeCostoDto>>> Get5()
+        {
+            var resultado = from ie in _context.inv_ensamble
+                            join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
+                            join ia in _context.inv_asignacion on ie.Id equals ia.IdEnsamble
+                            join ip in _context.inv_persona on ia.IdPersona equals ip.id
+                            join ia2 in _context.inv_area on ip.IdArea equals ia2.id
+                            join ie3 in _context.inv_empresa on ip.idEmpresa equals ie3.id
+                            join if2 in _context.inv_facturaciontmk on ie.Id equals if2.Id
+                            join im in _context.inv_marca on ie.IdMarca equals im.id
+                            where ie.Renting == true
+                            group new { ie2, im, ie, ia2, ie3, if2 } by new
+                            {
+                                ia2.id,
+                                ie.NumeroSerial,
+                                ie.Renting,
+                                ia2.Nombre,
+                                if2.VlrNeto,
+                                if2.Descripcion,
+                            } into g
+                            select new
+                            {
+                                g.Key.Nombre,                // Nombre del tipo de elemento
+                                Marca = g.Key.Nombre,        // Marca
+                                g.Key.NumeroSerial,          // Número de serie
+                                g.Key.Renting,               // Renting
+                                Area = g.Key.Nombre,         // Nombre del área
+                                Empresa = g.Key.Nombre,      // Nombre de la empresa
+                                VlrNeto = g.Key.VlrNeto,     // Valor neto
+                                Iva19 = g.Key.VlrNeto * 0.19,// Cálculo del IVA (19%)
+                                Factura = g.Key.Descripcion  // Descripción de la factura
+                            };
+
+            var listaResultados = await resultado.ToListAsync();
+
+            if (listaResultados == null)
+            {
+                return BadRequest("No se encontraron resultados.");
+            }
+
+            return Ok(listaResultados);
+        }
+
+
+
+        [HttpGet("linq de total de equipos")]
+        public async Task<ActionResult<List<CentroDeCostoDto2>>> Get6()
+        {
+            // Realizar la consulta LINQ
+            var result = await (from ensamble in _context.inv_ensamble
+                                join elementType in _context.inv_elementType on ensamble.IdElementType equals elementType.id
+                                join asignacion in _context.inv_asignacion on ensamble.Id equals asignacion.IdEnsamble
+                                join persona in _context.inv_persona on asignacion.IdPersona equals persona.id
+                                join area in _context.inv_area on persona.IdArea equals area.id
+                                join empresa in _context.inv_empresa on persona.idEmpresa equals empresa.id
+                                join factura in _context.inv_facturaciontmk on ensamble.Id equals factura.IdEnsamble
+                                where ensamble.Renting == true
+                                group new { factura.VlrNeto, area.Nombre, factura.Descripcion, factura.Fecha }
+                                by new { area.id, factura.Descripcion, factura.Fecha } into g
+                                select new CentroDeCostoDto2
+                                {
+                                    VlrNeto = g.Sum(x => x.VlrNeto), // Suma de VlrNeto
+                                    totalEquipos = g.Count(), // Cuenta de equipos
+                                    NombreArea = g.FirstOrDefault().Nombre, // Nombre del área
+                                    Factura = g.FirstOrDefault().Descripcion, // Descripción de la factura
+                                    //Fecha = g.FirstOrDefault().Fecha // Fecha de la factura
+                                }).ToListAsync();
+
+            if (result == null)
+            {
+                return BadRequest("No se encontraron resultados.");
+            }
+
+            return Ok(result);
+        }
+
+
+
+        //[HttpGet("linq2")]
+        //public async Task<ActionResult<List<CentroDeCostoDto>>> Get3()
         //{
-        //    var factura = await _context.inv_facturaciontmk.ToListAsync();
-        //    if (factura == null)
+        //    // Realizar la consulta LINQ
+        //    var result = await (from ie in _context.inv_ensamble
+        //                        join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
+        //                        join ia in _context.inv_asignacion on ie.Id equals ia.IdEnsamble
+        //                        join ip in _context.inv_persona on ia.IdPersona equals ip.id
+        //                        join ia2 in _context.inv_area on ip.IdArea equals ia2.id
+        //                        join ie3 in _context.inv_empresa on ip.idEmpresa equals ie3.id
+        //                        join if2 in _context.inv_facturaciontmk on ie.Id equals if2.Id
+        //                        where ie.Renting == true  // Filtrar por Renting true
+        //                        group new { ie, ie2.Nombre, ia2.Nombre, ie3.Nombre, if2.VlrNeto }
+        //                            by new { ia2.id, ie2.id, ie.NumeroSerial, ie.Renting, ia2.Nombre, ie3.Nombre, if2.VlrNeto } into g
+        //                        select new
+        //                        {
+        //                            Elemento = g.FirstOrDefault().Nombre,
+        //                            NumeroSerial = g.FirstOrDefault().ie.NumeroSerial,
+        //                            Renting = g.FirstOrDefault().ie.Renting,
+        //                            Area = g.FirstOrDefault().Nombre,
+        //                            Empresa = g.FirstOrDefault().ie3.Nombre,
+        //                            VlrNeto = g.Sum(x => x.VlrNeto)  // Sumamos VlrNeto
+        //                        }).ToListAsync();
+
+        //    // Si no hay resultados, retornar un BadRequest
+        //    if (result == null)
         //    {
-        //        return BadRequest("No se encontraron facturas");
+        //        return BadRequest("No se encontraron resultados.");
         //    }
 
-        //    var facturaDtos = _mapper.Map<List<CentroDeCostoDto>>(factura);
-
-        //    return Ok(facturaDtos);
+        //    // Devolver los resultados exitosos
+        //    return Ok(result);
         //}
 
-        //[HttpGet("FacturacionTMK")]
-        //public async Task<ActionResult<List<FacturacionTMKDto>>> Get1()
-        //{
-        //    var facturacion = await _context.inv_facturaciontmk.ToListAsync();
-
-        //    if (facturacion == null)
-        //    {
-        //        return BadRequest("No se encontro la factura.");
-        //    }
-
-        //    var facturacionDtos = new List<FacturacionTMKDto>();
-
-        //    foreach (var factura in facturacion)
-        //    {
-
-        //        var facturaName = await _context.inv_ensamble.FirstOrDefaultAsync(o => o.Id == factura.IdEnsamble);
-
-        //        if (facturaName == null)
-        //        {
-        //            return BadRequest($"No se encontró el ensamble para la propiedad: {facturaName}");
-        //        }
-
-        //        var facturaDto = new FacturacionTMKDto
-        //        {
-        //            Id = factura.Id,
-        //            VlrNeto = factura.VlrNeto,
-        //            IdEnsamble = factura.IdEnsamble,
-        //            Descripcion = factura.Descripcion,
-        //            Fecha = factura.Fecha,
-        //            EnsambleName = facturaName.NumeroSerial
-        //        };
-
-        //        facturacionDtos.Add(facturaDto);
-        //    }
-
-        //    return Ok(facturacionDtos);
-        //}
-
-        //[HttpGet("Ensamble")]
-        //public async Task<ActionResult<List<EnsambleDto>>> Get2()
-        //{
-        //    var ensamble = await _context.inv_ensamble.ToListAsync();
-
-        //    if (ensamble == null)
-        //    {
-        //        return BadRequest("No existe ningun ensamble");
-        //    }
-
-        //    var EnsambleDtos = new List<EnsambleDto>();
-
-        //    foreach (var ensambles in ensamble)
-        //    {
-        //        var elementype = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == ensambles.Id);
-        //        if (elementype == null)
-        //        {
-        //            return BadRequest("No tiene ningun tipo de elemento");
-        //        }
-
-        //        var ensambleDto = new EnsambleDto
-        //        {
-        //            Id = ensambles.Id,
-        //            IdElementType = ensambles.IdElementType,
-        //            IdMarca = ensambles.IdMarca,
-        //            NumeroSerial = ensambles.NumeroSerial,
-        //            Estado = ensambles.Estado,
-        //            Descripcion = ensambles.Descripcion,
-        //            Renting = ensambles.Renting,
-        //            TipoElemento = elementype.Nombre,
-        //        };
-
-        //        EnsambleDtos.Add(ensambleDto);
-        //    }
-
-        //    return Ok(EnsambleDtos);
-        //}
-        //[HttpGet]
-        //public async Task<ActionResult<List<CentroDeCostoDto>>> Get()
-        //{
-        //    var facturacion = await _context.inv_facturaciontmk.ToListAsync();
-
-        //    if (facturacion == null)
-        //    {
-        //        return BadRequest("No se encontro la factura.");
-        //    }
-
-        //    var ensamble = await _context.inv_ensamble.ToListAsync();
-        //    if (ensamble == null)
-        //    {
-        //        return BadRequest("No encontraron ensambles");
-        //    }
-
-        //    var facturacionDtos = new List<CentroDeCostoDto>();
-
-        //    foreach (var factura in facturacion)
-        //    {
-
-        //        var facturaName = await _context.inv_ensamble.FirstOrDefaultAsync(o => o.Id == factura.IdEnsamble);
-
-        //        if (facturaName == null)
-        //        {
-        //            return BadRequest($"No se encontró el ensamble para la propiedad: {facturaName}");
-        //        }
-
-        //        var facturaDto = new CentroDeCostoDto
-        //        {
-        //            Id = factura.Id,
-        //            VlrNeto = factura.VlrNeto,
-        //            IdEnsamble = factura.IdEnsamble,
-        //            Descripcion = factura.Descripcion,
-        //            Fecha = factura.Fecha,
-        //            EnsambleName = facturaName.NumeroSerial
-        //        };
-
-        //        facturacionDtos.Add(facturaDto);
-        //    }
-
-        //    return Ok(facturacionDtos);
-        //}
 
     }
 

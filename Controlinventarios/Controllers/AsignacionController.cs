@@ -52,11 +52,11 @@ namespace Controlinventarios.Controllers
 
             foreach (var asignacion in asignaciones)
             {
-                //var identificacionPersona = await _context.aspnetusers.FirstOrDefaultAsync(o => o.Id == asignacion.);
-                //if (identificacionPersona == null)
-                //{
-                //    return BadRequest("El nombre no se encontro");
-                //}
+                var identificacionPersona = await _context.inv_persona.FirstOrDefaultAsync(o => o.id == asignacion.IdPersona);
+                if (identificacionPersona == null)
+                {
+                    return BadRequest("El nombre no se encontro");
+                }
 
                 var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == asignacion.IdEnsamble);
                 if (ensamble == null)
@@ -68,7 +68,7 @@ namespace Controlinventarios.Controllers
                 {
                     IdPersona = asignacion.IdPersona,
                     IdEnsamble = asignacion.IdEnsamble,
-                    /*IdentificacionPersona = identificacionPersona.userId*/
+                    NombrePersona = identificacionPersona.userId,
                     Numeroserial = ensamble.NumeroSerial
                 };
 
@@ -77,6 +77,28 @@ namespace Controlinventarios.Controllers
 
             return Ok(asignacionDtos);
         }
+
+        [HttpGet("Consultal linq")]
+        public async Task<ActionResult<List<AsignacionDto>>> Get3()
+        {
+            var query = from ia in _context.inv_asignacion
+                        join ip in _context.inv_persona on ia.IdPersona equals ip.id
+                        join a in _context.aspnetusers on ip.userId equals a.Id
+                        join ie in _context.inv_ensamble on ia.IdEnsamble equals ie.Id
+                        join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
+                        select new
+                        {
+                            UserName = a.UserName,
+                            NumeroSerial = ie.NumeroSerial,
+                            Nombre = ie2.Nombre
+                        };
+
+            var result = query.ToList();
+
+            // Devuelve los resultados en formato JSON
+            return Ok(result);
+        }
+
 
 
 
