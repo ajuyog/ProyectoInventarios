@@ -74,20 +74,22 @@ namespace Controlinventarios.Controllers
                             group new { ie2, im, ie, ia2, ie3, if2 } by new
                             {
                                 ia2.id,
+                                ie.IdMarca,
                                 ie.NumeroSerial,
                                 ie.Renting,
                                 ia2.Nombre,
+                                ip.idEmpresa,
                                 if2.VlrNeto,
                                 if2.Descripcion,
                             } into g
                             select new
                             {
-                                g.Key.Nombre,                // Nombre del tipo de elemento
-                                Marca = g.Key.Nombre,        // Marca
+                                g.Key.id,                // Nombre del tipo de elemento
+                                Marca = g.Key.IdMarca,        // Marca
                                 g.Key.NumeroSerial,          // Número de serie
                                 g.Key.Renting,               // Renting
                                 Area = g.Key.Nombre,         // Nombre del área
-                                Empresa = g.Key.Nombre,      // Nombre de la empresa
+                                Empresa = g.Key.idEmpresa,      // Nombre de la empresa
                                 VlrNeto = g.Key.VlrNeto,     // Valor neto
                                 Iva19 = g.Key.VlrNeto * 0.19,// Cálculo del IVA (19%)
                                 Factura = g.Key.Descripcion  // Descripción de la factura
