@@ -78,7 +78,7 @@ namespace Controlinventarios.Controllers
             return Ok(asignacionDtos);
         }
 
-        [HttpGet("Consultal linq")]
+        [HttpGet("Consulta linq")]
         public async Task<ActionResult<List<AsignacionDto>>> Get3()
         {
             var query = from ia in _context.inv_asignacion
