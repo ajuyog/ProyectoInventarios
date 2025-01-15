@@ -189,7 +189,7 @@ namespace Controlinventarios.Controllers
                                by new { area.id, factura.Descripcion, factura.Fecha } into g
                                select new CentroDeCostoDto2
                                {
-                                   VlrNeto = g.Sum(x => x.VlrNeto), // suma de VlrNeto por area
+                                   AreaVlrNeto = g.Sum(x => x.VlrNeto), // suma de VlrNeto por area
                                    totalEquipos = g.Count(), // cuenta de equipos por área
                                    NombreArea = g.FirstOrDefault().Nombre, // nombre del area
                                    Factura = g.FirstOrDefault().Descripcion, // descripción de la factura
@@ -200,7 +200,7 @@ namespace Controlinventarios.Controllers
                                         .GroupBy(x => 1) // agrupa todo en un solo grupo
                                         .Select(s => new
                                         {
-                                            TotalVlrNeto = s.Sum(x => x.VlrNeto), // suma de todos los VlrNeto
+                                            TotalVlrNeto = s.Sum(x => x.AreaVlrNeto), // suma de todos los VlrNeto
                                             TotalEquipos = s.Sum(x => x.totalEquipos), // suma de todos los equipos
                                         })
                                         .FirstOrDefaultAsync();
@@ -212,12 +212,15 @@ namespace Controlinventarios.Controllers
             }
 
             // crear el dto para el total general de areas
-            var resultado_Total_General = new CentroDeCostoDto2
+            var resultado_Total_General = new List<CentroDeCostoDto2>
             {
-                VlrNeto = totalPorTodasLasAreas.TotalVlrNeto,
-                totalEquipos = totalPorTodasLasAreas.TotalEquipos,
-                NombreArea = "Total General", // el nombre sería algo indicativo de "Total"
-                Factura = "Total General" //descripcion general
+                new CentroDeCostoDto2
+                {
+                    TotalVlrNeto = totalPorTodasLasAreas.TotalVlrNeto,
+                    totalEquipos = totalPorTodasLasAreas.TotalEquipos,
+                    NombreArea = "Total General", // el nombre sería algo indicativo de "Total"
+                    Factura = "Total General" // descripcion general
+                }
             };
 
             // ejecuta ambas consultas
@@ -231,7 +234,7 @@ namespace Controlinventarios.Controllers
             }
 
             // combina los resultados en un solo objeto
-            var resultado = new
+            var resultado = new 
             {
                 EquiposSolos = solo_equipos,
                 ValorPorArea = Valor_Total_Area,
