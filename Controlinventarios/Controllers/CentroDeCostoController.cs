@@ -212,9 +212,9 @@ namespace Controlinventarios.Controllers
             }
 
             // crear el dto para el total general de areas
-            var resultado_Total_General = new List<CentroDeCostoDto2>
+            var resultado_Total_General = new List<CentroDeCostoDto3>
             {
-                new CentroDeCostoDto2
+                new CentroDeCostoDto3
                 {
                     TotalVlrNeto = totalPorTodasLasAreas.TotalVlrNeto,
                     totalEquipos = totalPorTodasLasAreas.TotalEquipos,
