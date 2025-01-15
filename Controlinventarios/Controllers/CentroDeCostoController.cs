@@ -172,7 +172,7 @@ namespace Controlinventarios.Controllers
                                       Area = g.Key.Nombre,             ////// nombre del area
                                       Empresa = g.Key.idEmpresa,      ////// nombre de la empresa
                                       VlrNeto = g.Key.VlrNeto,       ////// valor neto
-                                      Iva19 = g.Key.VlrNeto * 0.19, ////// calculo del IVA (19%)
+                                      Iva19 = g.Key.VlrNeto * 0.19, ////// calculo del iva
                                       Factura = g.Key.Descripcion  ////// descripcion de la factura
                                   };
 
@@ -241,42 +241,176 @@ namespace Controlinventarios.Controllers
             return Ok(resultado);
         }
 
-
-
-        //[HttpGet("linq2")]
-        //public async Task<ActionResult<List<CentroDeCostoDto>>> Get3()
+        //[HttpGet("linq combinado 2")]
+        //public async Task<ActionResult<List<CentroDeCostoDto>>> GetLinqCombinado2()
         //{
-        //    // Realizar la consulta LINQ
-        //    var result = await (from ie in _context.inv_ensamble
+        //    var linqCombinado = from ie in _context.inv_ensamble
         //                        join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
         //                        join ia in _context.inv_asignacion on ie.Id equals ia.IdEnsamble
         //                        join ip in _context.inv_persona on ia.IdPersona equals ip.id
         //                        join ia2 in _context.inv_area on ip.IdArea equals ia2.id
         //                        join ie3 in _context.inv_empresa on ip.idEmpresa equals ie3.id
         //                        join if2 in _context.inv_facturaciontmk on ie.Id equals if2.Id
-        //                        where ie.Renting == true  // Filtrar por Renting true
-        //                        group new { ie, ie2.Nombre, ia2.Nombre, ie3.Nombre, if2.VlrNeto }
-        //                            by new { ia2.id, ie2.id, ie.NumeroSerial, ie.Renting, ia2.Nombre, ie3.Nombre, if2.VlrNeto } into g
+        //                        join im in _context.inv_marca on ie.IdMarca equals im.id
+        //                        where ie.Renting == true
+        //                        group new { ie2, im, ie, ia2, ie3, if2, ip } by new
+        //                        {
+        //                            ia2.id,
+        //                            ie.IdMarca,
+        //                            ie.NumeroSerial,
+        //                            ie.Renting,
+        //                            ia2.Nombre,
+        //                            ip.idEmpresa,
+        //                            if2.VlrNeto,
+        //                            if2.Descripcion,
+        //                            if2.Fecha
+        //                        } into g
         //                        select new
         //                        {
-        //                            Elemento = g.FirstOrDefault().Nombre,
-        //                            NumeroSerial = g.FirstOrDefault().ie.NumeroSerial,
-        //                            Renting = g.FirstOrDefault().ie.Renting,
-        //                            Area = g.FirstOrDefault().Nombre,
-        //                            Empresa = g.FirstOrDefault().ie3.Nombre,
-        //                            VlrNeto = g.Sum(x => x.VlrNeto)  // Sumamos VlrNeto
-        //                        }).ToListAsync();
+        //                            g.Key.id,                            // nombre del tipo de elemento
+        //                            Marca = g.Key.IdMarca,               // marca
+        //                            g.Key.NumeroSerial,                  // numero de serie
+        //                            g.Key.Renting,                       // renting
+        //                            Area = g.Key.Nombre,                 // nombre del área
+        //                            Empresa = g.Key.idEmpresa,           // nombre de la empresa
+        //                            VlrNeto = g.Key.VlrNeto,             // valor neto
+        //                            Iva19 = g.Key.VlrNeto * 0.19,        // cálculo del IVA
+        //                            Factura = g.Key.Descripcion,         // descripción de la factura
+        //                            FechaFactura = g.Key.Fecha,          // fecha de la factura
+        //                            TotalEquiposPorArea = g.Count(),     // cantidad de equipos por área
+        //                            TotalVlrNetoPorArea = g.Sum(x => x.if2.VlrNeto) // suma total de VlrNeto por área
+        //                        };
 
-        //    // Si no hay resultados, retornar un BadRequest
-        //    if (result == null)
+        //    // Ejecutar la consulta combinada
+        //    var resultado = await linqCombinado.ToListAsync();
+
+        //    // Si no hay resultados, devolver error
+        //    if (resultado == null || !resultado.Any())
         //    {
-        //        return BadRequest("No se encontraron resultados.");
+        //        return BadRequest("No se encontraron resultados");
         //    }
 
-        //    // Devolver los resultados exitosos
-        //    return Ok(result);
+        //    // Agrupar los resultados por área para el total general
+        //    var totalGeneral = resultado
+        //                        .GroupBy(x => 1) // Agrupar todos los resultados
+        //                        .Select(g => new CentroDeCostoDto2
+        //                        {
+        //                            VlrNeto = g.Sum(x => x.TotalVlrNetoPorArea),
+        //                            totalEquipos = g.Sum(x => x.TotalEquiposPorArea),
+        //                            NombreArea = "Total General", // Nombre del total general
+        //                            Factura = "Total General" // Descripción general
+        //                        })
+        //                        .FirstOrDefault();
+
+        //    // Si no se encuentra el total general, devolver error
+        //    if (totalGeneral == null)
+        //    {
+        //        return BadRequest("No se encontraron resultados de totales");
+        //    }
+
+        //    // Combinar los resultados en un solo objeto
+        //    var resultadoFinal = new
+        //    {
+        //        EquiposSolos = resultado, // Detalles de cada equipo
+        //        TotalGeneral = totalGeneral // Total general de todas las áreas
+        //    };
+
+        //    return Ok(resultadoFinal);
         //}
 
+        //[HttpGet("linq combinado 3")]
+        //public async Task<ActionResult<List<CentroDeCostoDto>>> GetLinqCombinado3()
+        //{
+        //    // Obtener detalles de equipos por área
+        //    var linqValorEquipoPorArea = from ie in _context.inv_ensamble
+        //                                 join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
+        //                                 join ia in _context.inv_asignacion on ie.Id equals ia.IdEnsamble
+        //                                 join ip in _context.inv_persona on ia.IdPersona equals ip.id
+        //                                 join ia2 in _context.inv_area on ip.IdArea equals ia2.id
+        //                                 join ie3 in _context.inv_empresa on ip.idEmpresa equals ie3.id
+        //                                 join if2 in _context.inv_facturaciontmk on ie.Id equals if2.Id
+        //                                 join im in _context.inv_marca on ie.IdMarca equals im.id
+        //                                 where ie.Renting == true
+        //                                 group new { ie2, im, ie, ia2, ie3, if2, ip } by new
+        //                                 {
+        //                                     ia2.id,
+        //                                     ia2.Nombre,
+        //                                     ie.IdMarca,
+        //                                     ie.NumeroSerial,
+        //                                     ie.Renting,
+        //                                     ip.idEmpresa,
+        //                                     if2.VlrNeto,
+        //                                     if2.Descripcion,
+        //                                     if2.Fecha
+        //                                 } into g
+        //                                 select new
+        //                                 {
+        //                                     g.Key.id,                            // ID del área
+        //                                     Area = g.Key.Nombre,                 // Nombre del área
+        //                                     Marca = g.Key.IdMarca,               // Marca
+        //                                     g.Key.NumeroSerial,                  // Número de serie
+        //                                     g.Key.Renting,                       // Renting
+        //                                     Empresa = g.Key.idEmpresa,           // Empresa
+        //                                     VlrNeto = g.Key.VlrNeto,             // Valor neto
+        //                                     Iva19 = g.Key.VlrNeto * 0.19,        // IVA
+        //                                     Factura = g.Key.Descripcion,         // Descripción de la factura
+        //                                     FechaFactura = g.Key.Fecha,          // Fecha de la factura
+        //                                 };
+
+        //    // Ejecutar la consulta para equipos por área
+        //    var resultadoPorArea = await linqValorEquipoPorArea.ToListAsync();
+
+        //    // Si no hay resultados, devolver error
+        //    if (resultadoPorArea == null || !resultadoPorArea.Any())
+        //    {
+        //        return BadRequest("No se encontraron resultados");
+        //    }
+
+        //    // Obtener los totales por área (suma de VlrNeto y equipos por área)
+        //    var totalesPorArea = resultadoPorArea
+        //                         .GroupBy(x => new { x.id, x.Area }) // Agrupar por área
+        //                         .Select(g => new CentroDeCostoDto2
+        //                         {
+        //                             NombreArea = g.Key.Area,
+        //                             VlrNeto = g.Sum(x => x.VlrNeto),     // Sumar VlrNeto por área
+        //                             totalEquipos = g.Count(),             // Contar equipos por área
+        //                             Factura = g.FirstOrDefault()?.Factura // Usar la primera factura asociada
+        //                         })
+        //                         .ToList();
+
+        //    // Obtener el total general (todos los equipos y áreas)
+        //    var totalGeneral = new CentroDeCostoDto2
+        //    {
+        //        NombreArea = "Total General",
+        //        VlrNeto = resultadoPorArea.Sum(x => x.VlrNeto),
+        //        totalEquipos = resultadoPorArea.Count(),
+        //        Factura = "Total General"
+        //    };
+
+        //    // Resultado final con dos partes: Equipos por área y totales por área
+        //    var resultadoFinal = new
+        //    {
+        //        EquiposPorArea = resultadoPorArea,   // Detalles de los equipos por área
+        //        TotalesPorArea = totalesPorArea,     // Totales de VlrNeto y equipos por área
+        //        TotalGeneral = totalGeneral          // Total general de todos los equipos y áreas
+        //    };
+
+        //    // Retornar solo los datos de equipos por área (sin los totales por área ni total general)
+        //    var resultadoEquipos = new
+        //    {
+        //        EquiposPorArea = resultadoPorArea   // Detalles de los equipos por área
+        //    };
+
+        //    // Retornar solo los totales por área y el total general
+        //    var resultadoTotales = new
+        //    {
+        //        TotalesPorArea = totalesPorArea,     // Totales de VlrNeto y equipos por área
+        //        TotalGeneral = totalGeneral          // Total general de todos los equipos y áreas
+        //    };
+
+        //    // Devolver ambos JSONs separados
+        //    return Ok(new { EquiposPorArea = resultadoEquipos, TotalesPorArea = resultadoTotales });
+        //}
 
     }
 
