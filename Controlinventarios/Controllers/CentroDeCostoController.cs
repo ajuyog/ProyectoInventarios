@@ -172,8 +172,9 @@ namespace Controlinventarios.Controllers
                                       Area = g.Key.Nombre,             ////// nombre del area
                                       Empresa = g.Key.idEmpresa,      ////// nombre de la empresa
                                       VlrNeto = g.Key.VlrNeto,       ////// valor neto
-                                      Iva19 = g.Key.VlrNeto * 0.19, ////// calculo del iva
-                                      Factura = g.Key.Descripcion  ////// descripcion de la factura
+                                      Iva19 = g.Key.VlrNeto * 19 / 100, ////// calculo del iva
+                                      Factura = g.Key.Descripcion,     ////// descripcion de la factura
+                                      VlrBrutoEquipo = g.Key.VlrNeto + (g.Key.VlrNeto * 19 / 100)     ///// Valor con iva
                                   };
 
             // consulta para obtener los totales de equipos por area
@@ -190,9 +191,10 @@ namespace Controlinventarios.Controllers
                                select new CentroDeCostoDto2
                                {
                                    AreaVlrNeto = g.Sum(x => x.VlrNeto), // suma de VlrNeto por area
-                                   totalEquipos = g.Count(), // cuenta de equipos por área
+                                   totalEquipos = g.Count(), // cuenta de equipos por area
                                    NombreArea = g.FirstOrDefault().Nombre, // nombre del area
-                                   Factura = g.FirstOrDefault().Descripcion, // descripción de la factura
+                                   Factura = g.FirstOrDefault().Descripcion, // descripcion de la factura
+                                   VlrBrutoArea = g.Sum(x => x.VlrNeto) + (g.Sum(x => x.VlrNeto) * 19 / 1000)
                                };
 
             // sumar todos los VlrNeto y equipos de todas las áreas
@@ -200,7 +202,7 @@ namespace Controlinventarios.Controllers
                                         .GroupBy(x => 1) // agrupa todo en un solo grupo
                                         .Select(s => new
                                         {
-                                            TotalVlrNeto = s.Sum(x => x.AreaVlrNeto), // suma de todos los VlrNeto
+                                            TotalVlrNeto = s.Sum(x => x.VlrBrutoArea), // suma de todos los VlrNeto
                                             TotalEquipos = s.Sum(x => x.totalEquipos), // suma de todos los equipos
                                         })
                                         .FirstOrDefaultAsync();
