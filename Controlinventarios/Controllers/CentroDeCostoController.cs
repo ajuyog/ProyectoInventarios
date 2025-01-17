@@ -194,7 +194,7 @@ namespace Controlinventarios.Controllers
                                    totalEquipos = g.Count(), // cuenta de equipos por area
                                    NombreArea = g.FirstOrDefault().Nombre, // nombre del area
                                    Factura = g.FirstOrDefault().Descripcion, // descripcion de la factura
-                                   VlrBrutoArea = g.Sum(x => x.VlrNeto) + (g.Sum(x => x.VlrNeto) * 19 / 1000)
+                                   VlrBrutoArea = g.Sum(x => x.VlrNeto) + (g.Sum(x => x.VlrNeto) * 19 / 100)
                                };
 
             // sumar todos los VlrNeto y equipos de todas las áreas
