@@ -15,6 +15,7 @@ namespace Controlinventarios.Dto
         public string TipoDeElemento { get; set; }
         public DateOnly Fecha { get; set; }
         public string Marca { get; set; }
+        public string NombreMarca { get; set; }
     }
 
     //public class CentroDeCostoDto

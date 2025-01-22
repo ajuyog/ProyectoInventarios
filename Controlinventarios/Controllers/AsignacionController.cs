@@ -66,6 +66,7 @@ namespace Controlinventarios.Controllers
 
                 var asignacionDto = new AsignacionDto
                 {
+                    id = asignacion.id,
                     IdPersona = asignacion.IdPersona,
                     IdEnsamble = asignacion.IdEnsamble,
                     NombrePersona = identificacionPersona.userId,
@@ -88,6 +89,7 @@ namespace Controlinventarios.Controllers
                         join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
                         select new
                         {
+                            id = ia.id,
                             UserName = a.UserName,
                             NumeroSerial = ie.NumeroSerial,
                             Nombre = ie2.Nombre
@@ -154,14 +156,14 @@ namespace Controlinventarios.Controllers
             var usuarioExiste = await _context.inv_persona.FirstOrDefaultAsync(x => x.id == updateDto.idPersona);
             if (usuarioExiste == null)
             {
-                return NotFound($"La persona con el ID {updateDto.idPersona} no fue encontrado.");
+                return BadRequest($"La persona con el ID {updateDto.idPersona} no fue encontrado.");
             }
 
             //Verificacion del id Ensamble
             var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == updateDto.idPersona);
             if (ensambleExiste == null)
             {
-                return NotFound($"El ensamble con ID {updateDto.idEnsamble} no fue encontrado.");
+                return BadRequest($"El ensamble con ID {updateDto.idEnsamble} no fue encontrado.");
             }
 
             asignacion = _mapper.Map(updateDto, asignacion);

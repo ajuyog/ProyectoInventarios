@@ -84,14 +84,14 @@ namespace Controlinventarios.Controllers
         }
 
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<EnsambleDto>> GetId(int id)
+        [HttpGet("{NumeroSerial}")]
+        public async Task<ActionResult<EnsambleDto>> GetId(string NumeroSerial)
         {
-            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == id);
+            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.NumeroSerial == NumeroSerial);
 
             if (ensamble == null)
             {
-                return BadRequest($"No existe el id: {id}");
+                return BadRequest($"No existe el id: {NumeroSerial}");
             }
 
             var elementype = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == ensamble.IdElementType);

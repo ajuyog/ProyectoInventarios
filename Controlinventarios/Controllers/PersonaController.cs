@@ -76,15 +76,15 @@ namespace Controlinventarios.Controllers
             return Ok(personaDtos);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<PersonaDto>> GetId(int id)
+        [HttpGet("{identificacion},{correo}")]
+        public async Task<ActionResult<PersonaDto>> GetId(string identificacion, string correo)
         {
             // Verifica si la persona existe
-            var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.id == id);
+            var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.identificacion == identificacion);
 
             if (persona == null)
             {
-                return BadRequest($"No existe el id: {id}");
+                return BadRequest($"No existe la identificacion: {identificacion}");
             }
 
             // Se verifica el area del usuario
@@ -116,6 +116,7 @@ namespace Controlinventarios.Controllers
 
             return Ok(personaDto);
         }
+
 
 
 

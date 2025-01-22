@@ -155,7 +155,7 @@ namespace Controlinventarios.Controllers
                                   group new { ie2, im, ie, ia2, ie3, if2 } by new
                                   {
                                       ia2.id,
-                                      ie.IdMarca,
+                                      //im.NombreMarca,// Revisar del por que me pone que no existe la columna
                                       ie.NumeroSerial,
                                       ie.Renting,
                                       ia2.Nombre,
@@ -165,8 +165,8 @@ namespace Controlinventarios.Controllers
                                   } into g
                                   select new                                   
                                   {                               
-                                      g.Key.id,                            ////// nombre del tipo de elemento
-                                      Marca = g.Key.IdMarca,              ////// marca
+                                      g.Key.id,                           ////// nombre del tipo de elemento
+                                      //NombreMarca = g.Key.NombreMarca,
                                       g.Key.NumeroSerial,                ////// numero de serie
                                       g.Key.Renting,                    ////// renting
                                       Area = g.Key.Nombre,             ////// nombre del area
