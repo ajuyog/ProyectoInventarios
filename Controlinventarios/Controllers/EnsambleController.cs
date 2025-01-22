@@ -136,7 +136,7 @@ namespace Controlinventarios.Controllers
 
             if (elementoExiste == null)
             {
-                return NotFound($"El tipo de elemento con el ID {createDto.IdElementType} no fue encontrado.");
+                return BadRequest($"El tipo de elemento con el ID {createDto.IdElementType} no fue encontrado.");
             }
 
             //Verificacion sobre la marca
@@ -144,7 +144,7 @@ namespace Controlinventarios.Controllers
            
             if (marcaExiste == null)
             {
-                return NotFound($"La marca con ID {createDto.IdMarca} no fue encontrado.");
+                return BadRequest($"La marca con ID {createDto.IdMarca} no fue encontrado.");
             }
 
             // añade la entidad al contexto
