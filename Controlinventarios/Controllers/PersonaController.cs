@@ -103,15 +103,24 @@ namespace Controlinventarios.Controllers
                 return BadRequest("El usuario no existe");
             }
 
+            var nombreEmpresa = await _context.inv_empresa.FirstOrDefaultAsync(x => x.id == persona.idEmpresa);
+
+            if (nombreEmpresa == null)
+            {
+                return BadRequest($"No existe la empresa: {nombreEmpresa.Nombre}");
+            }
+
             var personaDto = new PersonaDto
             {
                 id = persona.id,
                 userId = persona.userId,
+                idEmpresa = persona.idEmpresa,
                 IdArea = persona.IdArea,
                 identificacion = persona.identificacion,
                 Estado = persona.Estado,
                 UserName = user.UserName,
-                AreaName = areaName.Nombre
+                AreaName = areaName.Nombre,
+                NombreEmpresa = nombreEmpresa.Nombre
             };
 
             return Ok(personaDto);
