@@ -89,16 +89,59 @@ namespace Controlinventarios.Controllers
                         join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
                         select new
                         {
-                            id = ia.id,
-                            UserName = a.UserName,
-                            NumeroSerial = ie.NumeroSerial,
-                            Nombre = ie2.Nombre
+                            Id = ia.id,
+                            Nombre = a.UserName,
+                            Serial = ie.NumeroSerial,
+                            Elemento = ie2.Nombre
                         };
 
             var result = query.ToList();
 
             // Devuelve los resultados en formato JSON
             return Ok(result);
+        }
+
+        [HttpGet("ConsultaLinq/{NumeroSerial}")]
+        public async Task<ActionResult<AsignacionDto>> GetById(string NumeroSerial)
+        {
+            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.NumeroSerial == NumeroSerial);
+            if  (ensamble == null)
+            {
+                return BadRequest($"No se encontro el serial: {NumeroSerial}");
+            }
+
+            // Verifica si existe la asignación con el id dado
+            var asignacion = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdEnsamble == ensamble.Id);
+
+            if (asignacion == null)
+            {
+                return BadRequest($"No existe el id de asignación: {ensamble.Id}");
+            }
+
+            // consulta linq para obtener los detalles asociados a la asignacion
+            var query = from ia in _context.inv_asignacion
+                        join ip in _context.inv_persona on ia.IdPersona equals ip.id
+                        join a in _context.aspnetusers on ip.userId equals a.Id
+                        join ie in _context.inv_ensamble on ia.IdEnsamble equals ie.Id
+                        join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
+                        where ie.NumeroSerial == NumeroSerial  // filtro por el id recibido
+                        select new AsignacionDto
+                        {
+                            id = ia.id,
+                            IdEnsamble = ia.IdEnsamble,
+                            IdPersona = ia.IdPersona,
+                            NombrePersona = a.UserName,
+                            Numeroserial = ie.NumeroSerial,
+                        };
+
+            var result = await query.FirstOrDefaultAsync(); // recupera el primer (y unico) elemento
+
+            if (result == null)
+            {
+                return BadRequest($"No se encontro el id: {NumeroSerial}"); // si no se encuentra, devuelve error
+            }
+
+            return Ok(result); // si existe, devuelve el resultado con un codigo 200
         }
 
 
