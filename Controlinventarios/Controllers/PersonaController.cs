@@ -39,7 +39,7 @@ namespace Controlinventarios.Controllers
 
             foreach (var persona in personas)
             {
-                var areaName = await _context.inv_area.FirstOrDefaultAsync(o => o.id == persona.IdArea);
+                var areaName = await _context.inv_area.FirstOrDefaultAsync(x => x.id == persona.IdArea);
                 if (areaName == null)
                 {
                     return BadRequest("El area no se encontro");
@@ -88,7 +88,7 @@ namespace Controlinventarios.Controllers
             }
 
             // Se verifica el area del usuario
-            var areaName = await _context.inv_area.FirstOrDefaultAsync(o => o.id == persona.IdArea);
+            var areaName = await _context.inv_area.FirstOrDefaultAsync(x => x.id == persona.IdArea);
 
             if (areaName == null)
             {
@@ -126,7 +126,65 @@ namespace Controlinventarios.Controllers
             return Ok(personaDto);
         }
 
+        [HttpGet("{Busqueda}")]
+        public async Task<ActionResult<List<PersonaDto>>> Get(string Busqueda)
+        {
+            // busca todas las personas que contengan la letra o numero en identificacion o correo
+            var personas = await _context.inv_persona.Where(x => x.identificacion.Contains(Busqueda) || x.userId.Contains(Busqueda)).ToListAsync();
+                
+            if (!personas.Any())
+            {
+                return BadRequest($"No se encontraron coincidencias con el criterio: {Busqueda}");
+            }
 
+            // lista para almacenar los resultados en formato DTO
+            var personasDto = new List<PersonaDto>();
+
+            foreach (var persona in personas)
+            {
+                // busca el area asociada
+                var areaName = await _context.inv_area.FirstOrDefaultAsync(x => x.id == persona.IdArea);
+
+                if (areaName == null)
+                {
+                    return BadRequest("El área no se encontró");
+                }
+
+                // busca el usuario asociado
+                var user = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == persona.userId);
+
+                if (user == null)
+                {
+                    return BadRequest("El usuario no existe");
+                }
+
+                // busca la empresa asociada
+                var nombreEmpresa = await _context.inv_empresa.FirstOrDefaultAsync(x => x.id == persona.idEmpresa);
+
+                if (nombreEmpresa == null)
+                {
+                    return BadRequest("La empresa no se encontró");
+                }
+
+                // agrega el DTO a la lista
+                personasDto.Add(new PersonaDto
+                {
+                    id = persona.id,
+                    userId = persona.userId,
+                    idEmpresa = persona.idEmpresa,
+                    IdArea = persona.IdArea,
+                    identificacion = persona.identificacion,
+                    Estado = persona.Estado,
+                    UserName = user.UserName,
+                    AreaName = areaName.Nombre,
+                    NombreEmpresa = nombreEmpresa.Nombre
+                });
+            }
+
+            return Ok(personasDto);
+        }    
+
+            
 
 
         [HttpPost]
