@@ -1,4 +1,6 @@
-﻿namespace Controlinventarios.Model
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Controlinventarios.Model
 {
     public class Asignacion
     {
