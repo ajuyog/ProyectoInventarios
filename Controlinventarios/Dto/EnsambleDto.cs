@@ -15,10 +15,11 @@
         public string Descripcion { get; set; }
 
         public bool Renting { get; set; }
-
+            
         public string TipoElemento { get; set; }
         public string NumeroFactura { get; set; }
 
         public string NombreMarca { get; set; }
+        public string PropiedadesConcatenadas { get; set; }
     }
 }

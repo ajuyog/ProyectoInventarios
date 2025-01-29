@@ -2,7 +2,7 @@
 {
     public class AsignacionCreateDto
     {
-        public int idPersona { get; set; }
+        public string idPersona { get; set; }
         public int idEnsamble { get; set; }
     }
 }

@@ -22,7 +22,7 @@ namespace Controlinventarios.Model
             modelBuilder.Entity<Ensamble>().HasKey(t => t.Id);
             modelBuilder.Entity<Propiedades>().HasKey(t => t.id);
             modelBuilder.Entity<ElementType>().HasKey(t => t.id);
-            modelBuilder.Entity<Persona>().HasKey(t => t.id);
+            modelBuilder.Entity<Persona>().HasKey(t => t.userId);
             modelBuilder.Entity<Area>().HasKey(t => t.id);
             
             base.OnModelCreating(modelBuilder);

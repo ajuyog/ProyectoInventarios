@@ -30,6 +30,7 @@ namespace Controlinventarios.Utilidad
 
             CreateMap<EnsambleCreateDto, Ensamble>().ReverseMap();
             CreateMap<Ensamble, EnsambleDto>().ReverseMap();
+            CreateMap<Ensamble, EnsambleDto2>().ReverseMap();
             
             CreateMap<AsignacionCreateDto, Asignacion>().ReverseMap();
             CreateMap<Asignacion, AsignacionDto>().ReverseMap();

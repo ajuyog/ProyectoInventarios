@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 
@@ -30,7 +31,7 @@ namespace Controlinventarios.Controllers
         [HttpGet]
         public async Task<ActionResult<List<PersonaDto>>> Get()
         {
-            var personas = await _context.inv_persona.OrderByDescending(x => x.id).ToListAsync();
+            var personas = await _context.inv_persona.OrderByDescending(x => x.userId).ToListAsync();
 
             if (personas == null)
             {
@@ -62,7 +63,6 @@ namespace Controlinventarios.Controllers
 
                 var personaDto = new PersonaDto
                 {
-                    id = persona.id,
                     userId = persona.userId,
                     IdArea = persona.IdArea,
                     idEmpresa = nombreEmpresa.id,
@@ -70,7 +70,9 @@ namespace Controlinventarios.Controllers
                     Estado = persona.Estado,
                     UserName = user.UserName,
                     AreaName = areaName.Nombre,
-                    NombreEmpresa = nombreEmpresa.Nombre
+                    NombreEmpresa = nombreEmpresa.Nombre,
+                    Nombres = persona.Nombres,
+                    Apellidos = persona.Apellidos
                 };
 
                 personaDtos.Add(personaDto);
@@ -115,7 +117,6 @@ namespace Controlinventarios.Controllers
 
             var personaDto = new PersonaDto
             {
-                id = persona.id,
                 userId = persona.userId,
                 idEmpresa = nombreEmpresa.id,
                 IdArea = persona.IdArea,
@@ -123,7 +124,9 @@ namespace Controlinventarios.Controllers
                 Estado = persona.Estado,
                 UserName = user.UserName,
                 AreaName = areaName.Nombre,
-                NombreEmpresa = nombreEmpresa.Nombre
+                NombreEmpresa = nombreEmpresa.Nombre,
+                Nombres = persona.Nombres,
+                Apellidos = persona.Apellidos
             };
 
             return Ok(personaDto);
@@ -405,73 +408,60 @@ namespace Controlinventarios.Controllers
         [HttpGet("{Busqueda}")]
         public async Task<ActionResult<List<PersonaDto>>> Get2(string Busqueda)
         {
-            // busca todas las personas que contengan la busqueda en identificacion
-            var personas = await _context.inv_persona.Where(x => x.identificacion.Contains(Busqueda)).ToListAsync();
+            var personas = await _context.inv_persona.Where(x => x.identificacion != null && x.identificacion.Contains(Busqueda)).OrderByDescending(x => x.userId).ToListAsync();
 
-            // busca todos los usuarios cuyo UserName contenga la busqueda
-            var usuarios = await _context.aspnetusers.Where(x => x.UserName.Contains(Busqueda)).ToListAsync();
+            var usuarios = await _context.aspnetusers.Where(x => x.UserName != null && x.UserName.Contains(Busqueda)).ToListAsync();
 
-            // verifica si no hay resultados en ambas consultas
             if (!personas.Any() && !usuarios.Any())
             {
                 return BadRequest($"No se encontraron coincidencias con el criterio: {Busqueda}");
             }
 
-            // lista para almacenar los resultados en formato DTO
             var personasDto = new List<PersonaDto>();
 
-            // Procesa las personas encontradas
             foreach (var persona in personas)
             {
-                // busca el area asociada
                 var area = await _context.inv_area.FirstOrDefaultAsync(x => x.id == persona.IdArea);
                 if (area == null)
                 {
                     return BadRequest($"No se encontró el área asociada para la persona con identificación: {persona.identificacion}");
                 }
 
-                // busca el usuario asociado a la persona
                 var nombreUsuario = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == persona.userId);
                 if (nombreUsuario == null)
                 {
                     return BadRequest($"No se encontró el usuario asociado para la persona con identificación: {persona.identificacion}");
                 }
 
-                // busca la empresa asociada
                 var empresa = await _context.inv_empresa.FirstOrDefaultAsync(x => x.id == persona.idEmpresa);
                 if (empresa == null)
                 {
                     return BadRequest($"No se encontró la empresa asociada para la persona con identificación: {persona.identificacion}");
                 }
 
-                // agrega el DTO para la persona
                 personasDto.Add(new PersonaDto
                 {
-                    id = persona.id,
                     userId = persona.userId,
                     idEmpresa = empresa.id,
                     IdArea = persona.IdArea,
                     identificacion = persona.identificacion,
-                    Estado = persona.Estado, // Aquí asumo que Estado es de tipo string
-                    UserName = nombreUsuario.UserName, // Muestra el UserName de la persona asociada
+                    Estado = persona.Estado,
+                    UserName = nombreUsuario.UserName,
                     AreaName = area.Nombre,
-                    NombreEmpresa = empresa.Nombre
+                    NombreEmpresa = empresa.Nombre,
+                    Nombres = persona.Nombres,
+                    Apellidos = persona.Apellidos
                 });
             }
 
-            // agrega los usuarios que no estan asociados a personas
             foreach (var usuario in usuarios)
             {
-                // verifica si el usuario ya esta asociado a una persona
-                var personaExistente = personas.FirstOrDefault(x => x.userId == usuario.Id);
-                if (personaExistente != null)
+                var nombre = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == usuario.Id);
+                if (nombre == null)
                 {
-                    // si el usuario ya fue asociado a una persona, se omite
-                    continue;
+                    continue; // Omite usuarios sin persona asociada
                 }
 
-                // busca el area y la empresa asociada para ese usuario
-                var nombre = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == usuario.Id);
                 var area = await _context.inv_area.FirstOrDefaultAsync(x => x.id == nombre.IdArea);
                 var empresa = await _context.inv_empresa.FirstOrDefaultAsync(x => x.id == nombre.idEmpresa);
 
@@ -480,24 +470,22 @@ namespace Controlinventarios.Controllers
                     return BadRequest($"No se encontró la empresa o área asociada para el usuario: {usuario.UserName}");
                 }
 
-                // agrega el DTO solo con la informacion del usuario
                 personasDto.Add(new PersonaDto
                 {
-                    id = nombre.id,
                     userId = usuario.Id,
-                    idEmpresa = empresa.id,  // accede correctamente a la propiedad de la empresa
-                    IdArea = area.id,        // accede correctamente a la propiedad del area
-                    identificacion = nombre.identificacion,     // aquí no tienes identificacion para el usuario, se puede dejar vacío
+                    idEmpresa = empresa.id,
+                    IdArea = area.id,
+                    identificacion = nombre.identificacion,
                     Estado = nombre.Estado,
                     UserName = usuario.UserName,
                     AreaName = area.Nombre,
-                    NombreEmpresa = empresa.Nombre
+                    NombreEmpresa = empresa.Nombre,
+                    Nombres = nombre.Nombres,
+                    Apellidos = nombre.Apellidos
                 });
             }
-
             return Ok(personasDto);
         }
-
 
 
         [HttpPost]
@@ -518,14 +506,14 @@ namespace Controlinventarios.Controllers
             // guardar los datos en la basee de datos
             await _context.SaveChangesAsync();
             //retorna lo guardado
-            return CreatedAtAction(nameof(GetId), new { id = persona.id }, persona);
+            return CreatedAtAction(nameof(GetId), new { id = persona.userId }, persona);
         }
 
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, PersonaCreateDto updateDto)
+        public async Task<ActionResult> Update(string id, PersonaCreateDto updateDto)
         {
-            var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.id == id);
+            var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == id);
 
             //verificacion si existe el area
             var areaExiste = await _context.inv_area.FirstOrDefaultAsync(x => x.id == updateDto.IdArea);
@@ -539,7 +527,7 @@ namespace Controlinventarios.Controllers
             _context.inv_persona.Update(persona);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetId), new { persona.id }, persona);
+            return CreatedAtAction(nameof(GetId), new { persona.userId }, persona);
 
         }
 

@@ -7,6 +7,5 @@
         public int totalEquipos { get; set; }
         public DateTime? Fecha { get; set; }
         public float AreaVlrNeto { get; set; }
-        public float VlrBrutoArea { get; set; }
     }
 }

@@ -7,5 +7,7 @@
         public string identificacion { get; set; }
         public bool Estado { get; set; }
         public int idEmpresa { get; set; }
+        public string Nombres { get; set; }
+        public string Apellidos { get; set; }
     }
 }

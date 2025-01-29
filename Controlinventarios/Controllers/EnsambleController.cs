@@ -59,9 +59,15 @@ namespace Controlinventarios.Controllers
                 }
 
                 var marca = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == ensambles.IdMarca);
-                if (marca == null) 
+                if (marca == null)
                 {
                     return BadRequest("No se encontraron marcas");
+                }
+
+                var factura = await _context.inv_facturaciontmk.FirstOrDefaultAsync(x => x.IdEnsamble == ensambles.Id);
+                if (factura == null)
+                {
+                    return BadRequest("No se encontraron numeros de faturas");
                 }
 
                 var ensambleDto = new EnsambleDto
@@ -74,6 +80,7 @@ namespace Controlinventarios.Controllers
                     Descripcion = ensambles.Descripcion,
                     Renting = ensambles.Renting,
                     TipoElemento = elementype.Nombre,
+                    NumeroFactura = factura.Descripcion,
                     NombreMarca = marca.Nombre
                 };
 
@@ -82,6 +89,36 @@ namespace Controlinventarios.Controllers
 
             return Ok(EnsambleDtos);
         }
+
+        [HttpGet("Propiedades concatenadas")]
+        public async Task<ActionResult<List<EnsambleDto2>>> GetPropiedadesConcatenadas()
+        {
+            var result = await _context.inv_ensamble
+                .Join(_context.inv_propiedades,
+                      ie => ie.Id,
+                      ip => ip.IdEnsamble,
+                      (ie, ip) => new { ie.Id, ie.NumeroSerial, ip.Propiedad })
+                .OrderBy(x => x.Id) // Aquí ordenas primero por Id
+                .GroupBy(x => x.NumeroSerial)
+                .Select(g => new EnsambleDto2
+                {
+                    id = g.First().Id,
+                    NumeroSerial = g.Key,
+                    // Aquí, ordenas dentro del grupo por Id y concatenas las propiedades
+                    PropiedadesConcatenadas = string.Join(" -- ", g.OrderBy(x => x.Id).Select(x => x.Propiedad)),
+                })
+                .ToListAsync();
+
+            if (result == null )
+            {
+                return BadRequest("No se encontraron datos de propiedades concatenadas");
+            }
+
+            return Ok(result);
+        }
+
+
+
 
 
         [HttpGet("{NumeroSerial}")]
@@ -123,37 +160,47 @@ namespace Controlinventarios.Controllers
             return Ok(ensambleDto);
         }
 
-
-
         [HttpPost]
         public async Task<ActionResult> Post(EnsambleCreateDto createDto)
         {
-            // el dto verifica la tabla
+            // El DTO verifica la tabla
             var ensamble = _mapper.Map<Ensamble>(createDto);
 
-            //Verificacion de ElemenType
+            // Verificación de ElementType
             var elementoExiste = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == createDto.IdElementType);
-
             if (elementoExiste == null)
             {
                 return BadRequest($"El tipo de elemento con el ID {createDto.IdElementType} no fue encontrado.");
             }
 
-            //Verificacion sobre la marca
+            // Verificación sobre la marca
             var marcaExiste = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == createDto.IdMarca);
-           
             if (marcaExiste == null)
             {
-                return BadRequest($"La marca con ID {createDto.IdMarca} no fue encontrado.");
+                return BadRequest($"La marca con ID {createDto.IdMarca} no fue encontrada.");
             }
 
-            // añade la entidad al contexto
+            // Añade la entidad al contexto
             _context.inv_ensamble.Add(ensamble);
-            // guardar los datos en la basee de datos
+            // Guarda los datos en la base de datos
             await _context.SaveChangesAsync();
-            //retorna lo guardado
+
+            // Retorna lo guardado
             return CreatedAtAction(nameof(GetId), new { id = ensamble.Id }, ensamble);
         }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Ensamble>> GetId(int id)
+        {
+            var ensamble = await _context.inv_ensamble.FindAsync(id);
+            if (ensamble == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(ensamble);
+        }
+
 
 
         [HttpPut("{id}")]
