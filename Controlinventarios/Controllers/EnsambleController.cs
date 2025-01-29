@@ -202,7 +202,6 @@ namespace Controlinventarios.Controllers
         }
 
 
-
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, EnsambleCreateDto updateDto)
         {
@@ -213,7 +212,7 @@ namespace Controlinventarios.Controllers
             }
 
             //Verificacion de ElemenType
-            var elementoExiste = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == updateDto.IdElementType);
+            var elementoExiste = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == updateDto.IdElementType);
             if (elementoExiste == null)
             {
                 return BadRequest($"El tipo de elemento con el ID {updateDto.IdElementType} no fue encontrado.");
