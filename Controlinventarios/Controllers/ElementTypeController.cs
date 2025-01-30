@@ -30,6 +30,8 @@ namespace Controlinventarios.Controllers
             // Obtén la lista de elementos de la tabla inv_elementType
             var elemento = await _context.inv_elementType.ToListAsync();
                 
+
+            // Mapea la lista de elementos transformados a una lista de ElementTypeDto
             var elementoDtos = _mapper.Map<List<ElementTypeDto>>(elemento);
 
             return Ok(elementoDtos);
