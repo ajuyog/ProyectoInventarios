@@ -75,7 +75,7 @@ namespace Controlinventarios.Controllers
                                    Factura = g.FirstOrDefault().Descripcion
                                };
 
-            // sumar todos los VlrNeto y equipos de todas las áreas
+            // sumar todos los VlrNeto y equipos de todas las areas
             var totalPorTodasLasAreas = await ValorPorArea
                                         .GroupBy(x => 1) // agrupa todo en un solo grupo
                                         .Select(s => new

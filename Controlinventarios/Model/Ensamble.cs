@@ -15,5 +15,7 @@
         public string Descripcion { get; set; }
 
         public bool Renting { get; set; }
+
+        public DateOnly FechaRegistroEquipo { get; set; }
     }
 }

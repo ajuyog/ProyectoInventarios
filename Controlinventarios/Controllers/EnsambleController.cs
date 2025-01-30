@@ -81,7 +81,8 @@ namespace Controlinventarios.Controllers
                     Renting = ensambles.Renting,
                     TipoElemento = elementype.Nombre,
                     NumeroFactura = factura.Descripcion,
-                    NombreMarca = marca.Nombre
+                    NombreMarca = marca.Nombre,
+                    FechaRegistroEquipo = ensambles.FechaRegistroEquipo
                 };
 
                 EnsambleDtos.Add(ensambleDto);
@@ -104,8 +105,8 @@ namespace Controlinventarios.Controllers
                 {
                     id = g.First().Id,
                     NumeroSerial = g.Key,
-                    // Aquí, ordenas dentro del grupo por Id y concatenas las propiedades
-                    PropiedadesConcatenadas = string.Join(" -- ", g.OrderBy(x => x.Id).Select(x => x.Propiedad)),
+                    // ordenas dentro del grupo por id y concatenas las propiedades
+                    PropiedadesConcatenadas = string.Join(" ; ", g.OrderBy(x => x.Id).Select(x => x.Propiedad)),
                 })
                 .ToListAsync();
 
@@ -180,14 +181,19 @@ namespace Controlinventarios.Controllers
                 return BadRequest($"La marca con ID {createDto.IdMarca} no fue encontrada.");
             }
 
-            // Añade la entidad al contexto
+            // asigna la fecha actual al campo FechaRegistroEquipo
+            ensamble.FechaRegistroEquipo = DateOnly.FromDateTime(DateTime.Now);
+
+            // añade la entidad al contexto
             _context.inv_ensamble.Add(ensamble);
-            // Guarda los datos en la base de datos
+
+            // guarda los datos en la base de datos
             await _context.SaveChangesAsync();
 
-            // Retorna lo guardado
+            // retorna lo guardar
             return CreatedAtAction(nameof(GetId), new { id = ensamble.Id }, ensamble);
         }
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Ensamble>> GetId(int id)
@@ -211,14 +217,14 @@ namespace Controlinventarios.Controllers
                 return BadRequest($"No se encontro el {id}.");
             }
 
-            //Verificacion de ElemenType
+            //verificacion de ElemenType
             var elementoExiste = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == updateDto.IdElementType);
             if (elementoExiste == null)
             {
                 return BadRequest($"El tipo de elemento con el ID {updateDto.IdElementType} no fue encontrado.");
             }
 
-            //Verificacion sobre la marca
+            //verificacion sobre la marca
             var marcaExiste = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == updateDto.IdMarca);
             if (marcaExiste == null)
             {
