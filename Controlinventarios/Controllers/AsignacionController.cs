@@ -67,7 +67,6 @@ namespace Controlinventarios.Controllers
 
                 var asignacionDto = new AsignacionDto
                 {
-                    id = asignacion.id,
                     IdPersona = asignacion.IdPersona,
                     IdEnsamble = asignacion.IdEnsamble,
                     NombrePersona = identificacionPersona.Nombres,
@@ -90,7 +89,6 @@ namespace Controlinventarios.Controllers
                         join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
                         select new
                         {
-                            Id = ia.id,
                             Nombre = a.UserName,
                             Serial = ie.NumeroSerial,
                             Elemento = ie2.Nombre
@@ -128,7 +126,6 @@ namespace Controlinventarios.Controllers
                         where ie.NumeroSerial == NumeroSerial  // filtro por el id recibido
                         select new AsignacionDto
                         {
-                            id = ia.id,
                             IdEnsamble = ia.IdEnsamble,
                             IdPersona = ia.IdPersona,
                             NombrePersona = a.UserName,
@@ -156,8 +153,36 @@ namespace Controlinventarios.Controllers
             {
                 return BadRequest($"No existe el id ensamble: {idEnsamble}");
             }
-            var asignacionDto = _mapper.Map<AsignacionDto>(asignacion);
-            return Ok(asignacionDto);
+
+            var nombreEnsamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == asignacion.IdEnsamble);
+            if (nombreEnsamble == null)
+            {
+                return BadRequest("No se encontraron ensambles ");
+            }
+
+            var query = from ia in _context.inv_asignacion
+                        join ip in _context.inv_persona on ia.IdPersona equals ip.userId
+                        join a in _context.aspnetusers on ip.userId equals a.Id
+                        join ie in _context.inv_ensamble on ia.IdEnsamble equals ie.Id
+                        join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
+                        where ia.IdEnsamble == idEnsamble  // filtro por el id recibido
+                        select new AsignacionDto
+                        {
+                            IdEnsamble = ia.IdEnsamble,
+                            IdPersona = ia.IdPersona,
+                            NombrePersona = a.UserName,
+                            Numeroserial = ie.NumeroSerial,
+                        };
+
+            var result = await query.FirstOrDefaultAsync(); // recupera el primer (y unico) elemento
+
+            if (result == null)
+            {
+                return BadRequest($"No se encontro el id: {idEnsamble}"); // si no se encuentra, devuelve error
+            }
+
+            //var asignacionDto = _mapper.Map<AsignacionDto>(asignacion);
+            return Ok(result);
         }
 
 
@@ -169,17 +194,17 @@ namespace Controlinventarios.Controllers
             var asignacion = _mapper.Map<Asignacion>(createDto);
 
             // Verificación del id de usuario
-            var usuarioExiste = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == createDto.idPersona);
+            var usuarioExiste = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == createDto.IdPersona);
             if (usuarioExiste == null)
             {
-                return BadRequest($"La persona con el ID {createDto.idPersona} no fue encontrada.");
+                return BadRequest($"La persona con el ID {createDto.IdPersona} no fue encontrada.");
             }
 
             // Verificación del id Ensamble
-            var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == createDto.idEnsamble);
+            var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
             if (ensambleExiste == null)
             {
-                return BadRequest($"El ensamble con ID {createDto.idEnsamble} no fue encontrado.");
+                return BadRequest($"El ensamble con ID {createDto.IdEnsamble} no fue encontrado.");
             }
 
             // Añade la entidad al contexto
@@ -194,20 +219,20 @@ namespace Controlinventarios.Controllers
 
 
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, AsignacionCreateDto updateDto)
+        [HttpPut("{userId}")]
+        public async Task<ActionResult> Update(string userId, AsignacionCreateDto updateDto)
         {
-            var asignacion = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.id == id);
+            var asignacion = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdPersona == userId);
             if (asignacion == null)
             {
-                return BadRequest($"No se encontraron asignaciones para el id: {id}");
+                return BadRequest($"No se encontraron asignaciones para el el usuario: {userId}");
             }
 
             // Verificación del id de usuario
-            var usuarioExiste = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == updateDto.idPersona);
+            var usuarioExiste = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == updateDto.IdPersona);
             if (usuarioExiste == null)
             {
-                return BadRequest($"La persona con el ID {updateDto.idPersona} no fue encontrado.");
+                return BadRequest($"La persona con el ID {updateDto.IdPersona} no fue encontrado.");
             }
 
             // Verificación del id de Ensamble
@@ -229,7 +254,7 @@ namespace Controlinventarios.Controllers
 
 
         [HttpDelete("{IdEnsamble}")]
-        public async Task<ActionResult> Delete(int IdEnsamble) // ✔️ Tipo int
+        public async Task<ActionResult> Delete(int IdEnsamble)
         {
             var asignacion = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdEnsamble == IdEnsamble);
 
