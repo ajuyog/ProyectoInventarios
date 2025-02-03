@@ -27,22 +27,30 @@ namespace Controlinventarios.Controllers
         [HttpGet]
         public async Task<ActionResult<List<ElementTypeDto>>> Get()
         {
-            // Obtén la lista de elementos de la tabla inv_elementType
             var elementos = await _context.inv_elementType.ToListAsync();
 
-            if (elementos == null)
+            if (elementos == null ) // Mejor validación
             {
                 return BadRequest("No se encontraron tipos de elementos");
             }
 
-            // Inicializamos la lista para almacenar los DTOs
-            var elementoDtos = elementos.Select(e => new ElementTypeDto
+            // Lista para almacenar los DTOs
+            var elementoDtos = new List<ElementTypeDto>();
+
+            foreach (var e in elementos)
             {
-                // Mapea las propiedades necesarias del objeto 'e' al DTO
-                id = e.id, // Suponiendo que 'Id' sea una propiedad de 'inv_elementType'
-                Nombre = e.Nombre // Suponiendo que 'nombre' sea una propiedad de 'inv_elementType'
-                              // Puedes agregar más propiedades según el modelo que tengas en 'inv_elementType'
-            }).ToList();
+                // Obtener el nombre correspondiente al IdElementType de cada elemento
+                var nombreElemento = await _context.inv_elementType
+                    .FirstOrDefaultAsync(x => x.id == e.IdElementType); // Usar e.IdElementType
+
+                elementoDtos.Add(new ElementTypeDto
+                {
+                    id = e.id,
+                    Nombre = e.Nombre,
+                    IdElementType = e.IdElementType,
+                    NombreElemento = nombreElemento?.Nombre ?? "Sin nombre" // si es null que ponga 
+                });
+            }
 
             return Ok(elementoDtos);
         }
