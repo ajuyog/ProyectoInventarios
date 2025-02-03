@@ -48,13 +48,11 @@ namespace Controlinventarios.Controllers
                     id = e.id,
                     Nombre = e.Nombre,
                     IdElementType = e.IdElementType,
-                    NombreElemento = nombreElemento?.Nombre ?? "Sin nombre" // si es null que ponga 
+                    NombreElemento = nombreElemento?.Nombre ?? "Sin referencia" // si es 0 que ponga Sin referencia en el campo de nombreElemento
                 });
             }
-
             return Ok(elementoDtos);
         }
-
 
 
         [HttpGet("{id}")]
@@ -65,7 +63,9 @@ namespace Controlinventarios.Controllers
             {
                 return BadRequest($"No existe el id: {id}");
             }
+
             var elementoDto = _mapper.Map<ElementTypeDto>(elemento);
+
             return Ok(elementoDto);
         }
 
@@ -95,7 +95,6 @@ namespace Controlinventarios.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetId), new { elemento.id }, elemento);
-
         }
 
 
