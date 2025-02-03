@@ -55,6 +55,10 @@ namespace Controlinventarios.Controllers
                                       VlrNeto = g.Key.VlrNeto,       ////// valor neto
                                       Factura = g.Key.Descripcion,     ////// descripcion de la factura
                                   };
+            if (linqValorEquipo == null)
+            {
+                return BadRequest("No se encontraron valores por equipo ");
+            }
 
             // consulta para obtener los totales de equipos por area
             var ValorPorArea = from ensamble in _context.inv_ensamble
@@ -88,7 +92,7 @@ namespace Controlinventarios.Controllers
             // si no se encuentra ningun resultado
             if (totalPorTodasLasAreas == null)
             {
-                return BadRequest("No se encontraron resultados de totales");
+                return BadRequest("No se encontraron resultados de totales por area");
             }
 
             // crear el dto para el total general de areas
@@ -105,6 +109,11 @@ namespace Controlinventarios.Controllers
                     Fecha = DateTime.Now
                 }
             };
+
+            if (resultado_Total_General == null)
+            {
+                return BadRequest("No se encontro total general");
+            }
 
             // ejecuta ambas consultas
             var solo_equipos = await linqValorEquipo.ToListAsync();

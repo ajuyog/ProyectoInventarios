@@ -83,7 +83,7 @@ namespace Controlinventarios.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var empresa = await _context.inv_empresa.FindAsync(id);
+            var empresa = await _context.inv_empresa.FirstOrDefaultAsync(x => x.id == id);
 
             if (empresa == null)
             {
@@ -93,7 +93,7 @@ namespace Controlinventarios.Controllers
             _context.inv_empresa.Remove(empresa);
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return Ok($"Se elimino la empresa: {empresa.Nombre}");
         }
     }
 }

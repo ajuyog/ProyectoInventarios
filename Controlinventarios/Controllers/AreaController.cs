@@ -54,13 +54,18 @@ namespace Controlinventarios.Controllers
         {
             // el dto verifica la tabla
             var area = _mapper.Map<Area>(createDto);
-            
+
+            if (area == null)
+            {
+                return BadRequest("No se encontraron areas");
+            }
+
             // añade la entidad al contexto
             _context.inv_area.Add(area);
             // guardar los datos en la basee de datos
             await _context.SaveChangesAsync();
             //retorna lo guardado
-            return CreatedAtAction(nameof(GetId), new { id = area.id }, area);
+            return CreatedAtAction(nameof(GetId), new { nombre = area.Nombre }, area);
         }
 
 
@@ -69,14 +74,20 @@ namespace Controlinventarios.Controllers
         {
             var area = await _context.inv_area.FirstOrDefaultAsync(x => x.id == id);
 
+            if (area == null)
+            {
+                return NotFound($"Área con id {id} no encontrada.");
+            }
+
             area = _mapper.Map(updateDto, area);
 
             _context.inv_area.Update(area);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetId), new { area.id }, area);
-
+            // Se usa el nombre correcto del parámetro para la acción GetId
+            return CreatedAtAction(nameof(GetId), new { nombre = area.Nombre }, area);
         }
+
 
 
         [HttpDelete("{id}")]
@@ -92,7 +103,7 @@ namespace Controlinventarios.Controllers
             _context.inv_area.Remove(area);
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return Ok($"Se elimino el {id}");
         }
     }
 }

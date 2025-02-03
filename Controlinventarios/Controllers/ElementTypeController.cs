@@ -28,14 +28,26 @@ namespace Controlinventarios.Controllers
         public async Task<ActionResult<List<ElementTypeDto>>> Get()
         {
             // Obtén la lista de elementos de la tabla inv_elementType
-            var elemento = await _context.inv_elementType.ToListAsync();
-                
+            var elementos = await _context.inv_elementType.ToListAsync();
 
-            // Mapea la lista de elementos transformados a una lista de ElementTypeDto
-            var elementoDtos = _mapper.Map<List<ElementTypeDto>>(elemento);
+            if (elementos == null)
+            {
+                return BadRequest("No se encontraron tipos de elementos");
+            }
+
+            // Inicializamos la lista para almacenar los DTOs
+            var elementoDtos = elementos.Select(e => new ElementTypeDto
+            {
+                // Mapea las propiedades necesarias del objeto 'e' al DTO
+                id = e.id, // Suponiendo que 'Id' sea una propiedad de 'inv_elementType'
+                Nombre = e.Nombre // Suponiendo que 'nombre' sea una propiedad de 'inv_elementType'
+                              // Puedes agregar más propiedades según el modelo que tengas en 'inv_elementType'
+            }).ToList();
 
             return Ok(elementoDtos);
         }
+
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ElementTypeDto>> GetId(int id)
@@ -92,7 +104,7 @@ namespace Controlinventarios.Controllers
             _context.inv_elementType.Remove(elemento);
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return Ok($"Se elimino el elemento: {elemento}");
         }
     }
 }

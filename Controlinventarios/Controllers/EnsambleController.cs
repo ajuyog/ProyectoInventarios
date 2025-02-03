@@ -99,14 +99,14 @@ namespace Controlinventarios.Controllers
                       ie => ie.Id,
                       ip => ip.IdEnsamble,
                       (ie, ip) => new { ie.Id, ie.NumeroSerial, ip.Propiedad })
-                .OrderBy(x => x.Id) // Aquí ordenas primero por Id
+                .OrderByDescending(x => x.Id) // Aquí ordenas primero por Id
                 .GroupBy(x => x.NumeroSerial)
                 .Select(g => new EnsambleDto2
                 {
                     id = g.First().Id,
                     NumeroSerial = g.Key,
                     // ordenas dentro del grupo por id y concatenas las propiedades
-                    PropiedadesConcatenadas = string.Join(" ; ", g.OrderBy(x => x.Id).Select(x => x.Propiedad)),
+                    PropiedadesConcatenadas = string.Join("; ", g.OrderBy(x => x.Id).Select(x => x.Propiedad)),
                 })
                 .ToListAsync();
 
@@ -198,10 +198,10 @@ namespace Controlinventarios.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Ensamble>> GetId(int id)
         {
-            var ensamble = await _context.inv_ensamble.FindAsync(id);
+            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == id);
             if (ensamble == null)
             {
-                return NotFound();
+                return BadRequest($"No sencontraron ensambles con el id {id}");
             }
 
             return Ok(ensamble);

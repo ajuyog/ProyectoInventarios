@@ -165,45 +165,52 @@ namespace Controlinventarios.Controllers
         [HttpPost]
         public async Task<ActionResult> Post(AsignacionCreateDto createDto)
         {
-            // el dto verifica la tabla
+            // El DTO verifica la tabla
             var asignacion = _mapper.Map<Asignacion>(createDto);
 
-            //Verificacion del id de usuario
+            // Verificación del id de usuario
             var usuarioExiste = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == createDto.idPersona);
             if (usuarioExiste == null)
             {
-                return BadRequest($"La persona con el ID {createDto.idPersona} no fue encontrado.");
+                return BadRequest($"La persona con el ID {createDto.idPersona} no fue encontrada.");
             }
 
-            //Verificacion del id Ensamble
+            // Verificación del id Ensamble
             var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == createDto.idEnsamble);
             if (ensambleExiste == null)
             {
                 return BadRequest($"El ensamble con ID {createDto.idEnsamble} no fue encontrado.");
             }
 
-            // añade la entidad al contexto
+            // Añade la entidad al contexto
             _context.inv_asignacion.Add(asignacion);
-            // guardar los datos en la basee de datos
+
+            // Guardar los datos en la base de datos
             await _context.SaveChangesAsync();
-            //retorna lo guardado
-            return CreatedAtAction(nameof(GetId), new { id = asignacion.IdPersona }, asignacion);
+
+            // Retorna lo guardado, asegurándose de que el parámetro de la ruta coincida con lo esperado en GetId
+            return CreatedAtAction(nameof(GetId), new { idEnsamble = asignacion.IdEnsamble }, asignacion);
         }
 
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult> Update(string id, AsignacionCreateDto updateDto)
-        {
-            var asignacion = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdPersona == id);
 
-            //Verificacion del id de usuario
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Update(int id, AsignacionCreateDto updateDto)
+        {
+            var asignacion = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.id == id);
+            if (asignacion == null)
+            {
+                return BadRequest($"No se encontraron asignaciones para el id: {id}");
+            }
+
+            // Verificación del id de usuario
             var usuarioExiste = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == updateDto.idPersona);
             if (usuarioExiste == null)
             {
                 return BadRequest($"La persona con el ID {updateDto.idPersona} no fue encontrado.");
             }
 
-            //Verificacion del id Ensamble
+            // Verificación del id de Ensamble
             var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == asignacion.IdEnsamble);
             if (ensambleExiste == null)
             {
@@ -215,25 +222,26 @@ namespace Controlinventarios.Controllers
             _context.inv_asignacion.Update(asignacion);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetId), new { asignacion.IdPersona }, asignacion);
-
+            // Cambiar el parámetro a 'IdEnsamble', que es el que se espera en GetId
+            return CreatedAtAction(nameof(GetId), new { idpersona = asignacion.IdPersona }, asignacion);
         }
 
 
+
         [HttpDelete("{IdEnsamble}")]
-        public async Task<ActionResult> Delete(int IdEnsamble)
+        public async Task<ActionResult> Delete(int IdEnsamble) // ✔️ Tipo int
         {
-            var asignacion = await _context.inv_asignacion.FindAsync(IdEnsamble);
+            var asignacion = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdEnsamble == IdEnsamble);
 
             if (asignacion == null)
             {
-                return BadRequest($"No existe el ensamble: {IdEnsamble}");
+                return NotFound($"No existe el ensamble: {IdEnsamble}");
             }
 
             _context.inv_asignacion.Remove(asignacion);
             await _context.SaveChangesAsync();
 
-            return Ok($"Se elimino el ensamble: {IdEnsamble}");
+            return Ok($"Se eliminó el ensamble: {IdEnsamble}");
         }
 
     }

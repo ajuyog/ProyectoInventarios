@@ -48,7 +48,7 @@ namespace Controlinventarios.Controllers
             foreach (var factura in facturacion)
             {
 
-                var facturaName = await _context.inv_ensamble.FirstOrDefaultAsync(o => o.Id == factura.IdEnsamble);
+                var facturaName = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == factura.IdEnsamble);
 
                 if (facturaName == null)
                 {
@@ -98,6 +98,7 @@ namespace Controlinventarios.Controllers
                     {
                         return BadRequest("No se encontraron marcas");
                     }
+                    
 
                     var facturaDto = new EnsambleDto
                     {
@@ -110,6 +111,7 @@ namespace Controlinventarios.Controllers
                         Renting = factura.Renting,
                         NumeroFactura = facturaName.Descripcion,
                         NombreMarca = Nombremarca.Nombre
+                        //NombreArea = nombreArea.Nombre
                     };
 
                     facturacionDtosTrue.Add(facturaDto);
