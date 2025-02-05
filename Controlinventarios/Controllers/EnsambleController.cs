@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Controlinventarios.Dto;
 using Controlinventarios.Model;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -174,10 +175,10 @@ namespace Controlinventarios.Controllers
             // Ejecutar la consulta
             var resultados = await query.ToListAsync();
 
-            // Si no hay resultados, retornar lista vacía
+            // Si no hay resultados, retornar badrequest
             if (!resultados.Any())
             {
-                return Ok(new List<EnsambleDto>());
+                return BadRequest("No existe ningun coincidencia");
             }
 
             // Mapear a DTO
