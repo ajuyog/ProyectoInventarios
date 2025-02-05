@@ -54,7 +54,6 @@ namespace Controlinventarios.Controllers
                         Estado = factura.Estado,
                         Descripcion = factura.Descripcion,
                         Renting = factura.Renting,
-                        NumeroFactura = facturaName.Descripcion
                     };
 
                     facturacionDtosFalse.Add(facturaDto);

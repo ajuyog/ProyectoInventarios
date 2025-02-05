@@ -4,5 +4,7 @@
     {
         public string Propiedad { get; set; }
         public int IdEnsamble { get; set; }
+        public string NumeroSerial { get; set; }
+        public List<string> Propiedades { get; set; }
     }
 }

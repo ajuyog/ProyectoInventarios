@@ -64,12 +64,6 @@ namespace Controlinventarios.Controllers
                     return BadRequest("No se encontraron marcas");
                 }
 
-                var factura = await _context.inv_facturaciontmk.FirstOrDefaultAsync(x => x.IdEnsamble == ensambles.Id);
-                if (factura == null)
-                {
-                    return BadRequest("No se encontraron numeros de faturas");
-                }
-
                 var ensambleDto = new EnsambleDto
                 {
                     Id = ensambles.Id,
@@ -80,7 +74,6 @@ namespace Controlinventarios.Controllers
                     Descripcion = ensambles.Descripcion,
                     Renting = ensambles.Renting,
                     TipoElemento = elementype.Nombre,
-                    NumeroFactura = factura.Descripcion,
                     NombreMarca = marca.Nombre,
                     FechaRegistroEquipo = ensambles.FechaRegistroEquipo
                 };

@@ -44,8 +44,8 @@ namespace Controlinventarios.Controllers
                                       if2.VlrNeto,
                                       if2.Descripcion,
                                   } into g
-                                  select new                                   
-                                  {                               
+                                  select new
+                                  {
                                       g.Key.id,                           ////// nombre del tipo de elemento
                                       //NombreMarca = g.Key.NombreMarca,
                                       g.Key.NumeroSerial,                ////// numero de serie
@@ -126,7 +126,7 @@ namespace Controlinventarios.Controllers
             }
 
             // combina los resultados en un solo objeto
-            var resultado = new 
+            var resultado = new
             {
                 EquiposSolos = solo_equipos,
                 ValorPorArea = Valor_Total_Area,
@@ -135,6 +135,7 @@ namespace Controlinventarios.Controllers
 
             return Ok(resultado);
         }
+
 
     }
 

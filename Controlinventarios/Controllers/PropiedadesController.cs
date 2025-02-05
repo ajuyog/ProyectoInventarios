@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection.PortableExecutable;
 using System.Threading.Tasks;
 
 namespace Controlinventarios.Controllers
@@ -39,7 +40,7 @@ namespace Controlinventarios.Controllers
         {
             var propiedades = await _context.inv_propiedades.ToListAsync();
 
-            if (propiedades == null)
+            if (!propiedades.Any())
             {
                 return BadRequest("No se encontraron propiedades.");
             }
@@ -48,12 +49,11 @@ namespace Controlinventarios.Controllers
 
             foreach (var propiedad in propiedades)
             {
-               
                 var ensambleName = await _context.inv_ensamble.FirstOrDefaultAsync(o => o.Id == propiedad.IdEnsamble);
 
                 if (ensambleName == null)
                 {
-                    return BadRequest($"No se encontró el ensamble para la propiedad: {ensambleName}");
+                    return BadRequest($"No se encontró el ensamble para la propiedad con ID {propiedad.id}");
                 }
 
                 var propiedadDto = new PropiedadesDto
@@ -61,7 +61,8 @@ namespace Controlinventarios.Controllers
                     id = propiedad.id,
                     Propiedad = propiedad.Propiedad,
                     IdEnsamble = propiedad.IdEnsamble,
-                    EnsambleName = ensambleName.NumeroSerial
+                    EnsambleName = ensambleName.NumeroSerial,
+                    Propiedades = propiedad.Propiedadess
                 };
 
                 propiedadesDtos.Add(propiedadDto);
@@ -96,7 +97,8 @@ namespace Controlinventarios.Controllers
                 id = propiedad.id,
                 Propiedad = propiedad.Propiedad,
                 IdEnsamble = propiedad.IdEnsamble,
-                EnsambleName = ensambleName.NumeroSerial
+                EnsambleName = ensambleName.NumeroSerial,
+                Propiedades = propiedad.Propiedadess
             };
 
             return Ok(propiedadDto);
@@ -104,29 +106,52 @@ namespace Controlinventarios.Controllers
 
 
 
+        //[HttpPost]
+        //public async Task<ActionResult> Post2(PropiedadesCreateDto createDto)
+        //{
+        //    // el dto verifica la tabla
+        //    var propiedad = _mapper.Map<Propiedades>(createDto);
+
+        //    // Verificacion de que existe el ensasmble
+        //    var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
+        //    if (ensambleExiste == null)
+        //    {
+        //        return BadRequest($"El ensamble con ID {createDto.IdEnsamble} no fue encontrado.");
+        //    }
+
+        //    // añade la entidad al contexto
+        //    _context.inv_propiedades.Add(propiedad);
+        //    // guardar los datos en la basee de datos
+        //    await _context.SaveChangesAsync();
+        //    //retorna lo guardado
+        //    return CreatedAtAction(nameof(GetId), new { id = propiedad.id }, propiedad);
+        //}
+
         [HttpPost]
-        public async Task<ActionResult> Post(PropiedadesCreateDto createDto)
+        public async Task<ActionResult<Propiedades>> Post(PropiedadesCreateDto createDto)
         {
-            // el dto verifica la tabla
+            // Mapeo DTO a entidad
             var propiedad = _mapper.Map<Propiedades>(createDto);
 
-            // Verificacion de que existe el ensasmble
-            var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
+            // Validar existencia del ensamble
+            var ensambleExiste = await _context.inv_ensamble
+                .FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
+
             if (ensambleExiste == null)
             {
-                return BadRequest($"El ensamble con ID {createDto.IdEnsamble} no fue encontrado.");
+                return BadRequest($"Ensamble con ID {createDto.IdEnsamble} no existe.");
             }
 
-            // añade la entidad al contexto
+            // Persistir en base de datos
             _context.inv_propiedades.Add(propiedad);
-            // guardar los datos en la basee de datos
             await _context.SaveChangesAsync();
-            //retorna lo guardado
+
+            // Retornar resultado
             return CreatedAtAction(nameof(GetId), new { id = propiedad.id }, propiedad);
         }
 
 
-        [HttpPut("{id}")]
+        [HttpPut]
         public async Task<ActionResult> Update(int id, PropiedadesCreateDto updateDto)
         {
             var propiedad = await _context.inv_propiedades.FirstOrDefaultAsync(x => x.id == id);
