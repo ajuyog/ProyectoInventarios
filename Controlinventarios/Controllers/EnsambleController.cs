@@ -115,43 +115,87 @@ namespace Controlinventarios.Controllers
 
 
 
-        [HttpGet("{NumeroSerial}")]
-        public async Task<ActionResult<EnsambleDto>> GetId(string NumeroSerial)
+        //[HttpGet("{NumeroSerial}")]
+        //public async Task<ActionResult<EnsambleDto>> GetId(string NumeroSerial)
+        //{
+        //    var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.NumeroSerial == NumeroSerial);
+
+        //    if (ensamble == null)
+        //    {
+        //        return BadRequest($"No existe el id: {NumeroSerial}");
+        //    }
+
+        //    var elementype = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == ensamble.IdElementType);
+
+        //    if (elementype == null)
+        //    {
+        //        return BadRequest("No tiene ningun tipo de elemento");
+        //    }
+
+        //    var marca = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == ensamble.IdMarca);
+        //    if (marca == null)
+        //    {
+        //        return BadRequest("No se encontraron marcas");
+        //    }
+
+        //    var ensambleDto = new EnsambleDto
+        //    {
+        //        Id = ensamble.Id,
+        //        IdElementType = ensamble.IdElementType,
+        //        IdMarca = ensamble.IdMarca,
+        //        NumeroSerial = ensamble.NumeroSerial,
+        //        Estado = ensamble.Estado,
+        //        Descripcion = ensamble.Descripcion,
+        //        Renting = ensamble.Renting,
+        //        TipoElemento = elementype.Nombre,
+        //        NombreMarca = marca.Nombre
+        //    };
+
+        //    return Ok(ensambleDto);
+        //}
+
+        [HttpGet("Busqueda")]
+        public async Task<ActionResult<List<EnsambleDto>>> GetBusqueda(string busqueda)
         {
-            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.NumeroSerial == NumeroSerial);
+            // Inicializar la consulta con joins para incluir ElementType y Marca
+            var query = from e in _context.inv_ensamble
+                        join et in _context.inv_elementType on e.IdElementType equals et.id
+                        join m in _context.inv_marca on e.IdMarca equals m.id
+                        select new { Ensamble = e, ElementType = et, Marca = m };
 
-            if (ensamble == null)
+            // Si el parámetro de busqueda no está vacío o nulo, aplicar filtros
+            if (!string.IsNullOrEmpty(busqueda))
             {
-                return BadRequest($"No existe el id: {NumeroSerial}");
+                query = query.Where(x => x.Ensamble.NumeroSerial.Contains(busqueda) ||
+                                         x.ElementType.Nombre.Contains(busqueda) ||
+                                         x.Marca.Nombre.Contains(busqueda));
             }
 
-            var elementype = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == ensamble.IdElementType);
+            // Ejecutar la consulta
+            var resultados = await query.ToListAsync();
 
-            if (elementype == null)
+            // Si no hay resultados, retornar lista vacía
+            if (!resultados.Any())
             {
-                return BadRequest("No tiene ningun tipo de elemento");
+                return Ok(new List<EnsambleDto>());
             }
 
-            var marca = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == ensamble.IdMarca);
-            if (marca == null)
+            // Mapear a DTO
+            var ensamblesDto = resultados.Select(x => new EnsambleDto
             {
-                return BadRequest("No se encontraron marcas");
-            }
+                Id = x.Ensamble.Id,
+                IdElementType = x.Ensamble.IdElementType,
+                IdMarca = x.Ensamble.IdMarca,
+                NumeroSerial = x.Ensamble.NumeroSerial,
+                Estado = x.Ensamble.Estado,
+                Descripcion = x.Ensamble.Descripcion,
+                Renting = x.Ensamble.Renting,
+                TipoElemento = x.ElementType.Nombre,
+                NombreMarca = x.Marca.Nombre,
+                FechaRegistroEquipo = x.Ensamble.FechaRegistroEquipo
+            }).ToList();
 
-            var ensambleDto = new EnsambleDto
-            {
-                Id = ensamble.Id,
-                IdElementType = ensamble.IdElementType,
-                IdMarca = ensamble.IdMarca,
-                NumeroSerial = ensamble.NumeroSerial,
-                Estado = ensamble.Estado,
-                Descripcion = ensamble.Descripcion,
-                Renting = ensamble.Renting,
-                TipoElemento = elementype.Nombre,
-                NombreMarca = marca.Nombre
-            };
-
-            return Ok(ensambleDto);
+            return Ok(ensamblesDto);
         }
 
         [HttpPost]

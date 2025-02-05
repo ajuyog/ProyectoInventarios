@@ -133,7 +133,7 @@ namespace Controlinventarios.Controllers
             // Mapeo DTO a entidad
             var propiedad = _mapper.Map<Propiedades>(createDto);
 
-            // Validar existencia del ensamble
+            // validar existencia del ensamble
             var ensambleExiste = await _context.inv_ensamble
                 .FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
 
