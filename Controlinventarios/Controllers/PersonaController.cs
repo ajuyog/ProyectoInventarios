@@ -140,6 +140,8 @@ namespace Controlinventarios.Controllers
 
             var usuarios = await _context.aspnetusers.Where(x => x.UserName != null && x.UserName.Contains(Busqueda)).ToListAsync();
 
+            var nombres = await _context.inv_persona.Where(x => x.Nombres != null && x.Nombres.Contains(Busqueda)).ToListAsync();
+
             if (!personas.Any() && !usuarios.Any())
             {
                 return BadRequest($"No se encontraron coincidencias con el criterio: {Busqueda}");

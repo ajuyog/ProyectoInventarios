@@ -46,14 +46,14 @@ namespace Controlinventarios.Controllers
                                   } into g
                                   select new
                                   {
-                                      g.Key.id,                           ////// nombre del tipo de elemento
+                                      g.Key.id,                            ////// nombre del tipo de elemento
                                       //NombreMarca = g.Key.NombreMarca,
                                       g.Key.NumeroSerial,                ////// numero de serie
                                       g.Key.Renting,                    ////// renting
                                       Area = g.Key.Nombre,             ////// nombre del area
                                       Empresa = g.Key.idEmpresa,      ////// nombre de la empresa
                                       VlrNeto = g.Key.VlrNeto,       ////// valor neto
-                                      Factura = g.Key.Descripcion,     ////// descripcion de la factura
+                                      Factura = g.Key.Descripcion,  ////// descripcion de la factura
                                   };
             if (linqValorEquipo == null)
             {
