@@ -206,6 +206,8 @@ namespace Controlinventarios.Controllers
                 return BadRequest($"El ensamble con ID {createDto.IdEnsamble} no fue encontrado.");
             }
 
+            asignacion.FechaDeRegistro = DateOnly.FromDateTime(DateTime.Now);
+
             // Añade la entidad al contexto
             _context.inv_asignacion.Add(asignacion);
 
