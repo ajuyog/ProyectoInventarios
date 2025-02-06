@@ -85,6 +85,18 @@ namespace Controlinventarios.Controllers
             return Ok(EnsambleDtos);
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Ensamble>> GetId(int id)
+        {
+            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == id);
+            if (ensamble == null)
+            {
+                return BadRequest($"No sencontraron ensambles con el id {id}");
+            }
+
+            return Ok(ensamble);
+        }
+
         [HttpGet("Propiedades concatenadas")]
         public async Task<ActionResult<List<EnsambleDto2>>> GetPropiedadesConcatenadas()
         {
@@ -111,49 +123,6 @@ namespace Controlinventarios.Controllers
 
             return Ok(result);
         }
-
-
-
-
-
-        //[HttpGet("{NumeroSerial}")]
-        //public async Task<ActionResult<EnsambleDto>> GetId(string NumeroSerial)
-        //{
-        //    var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.NumeroSerial == NumeroSerial);
-
-        //    if (ensamble == null)
-        //    {
-        //        return BadRequest($"No existe el id: {NumeroSerial}");
-        //    }
-
-        //    var elementype = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == ensamble.IdElementType);
-
-        //    if (elementype == null)
-        //    {
-        //        return BadRequest("No tiene ningun tipo de elemento");
-        //    }
-
-        //    var marca = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == ensamble.IdMarca);
-        //    if (marca == null)
-        //    {
-        //        return BadRequest("No se encontraron marcas");
-        //    }
-
-        //    var ensambleDto = new EnsambleDto
-        //    {
-        //        Id = ensamble.Id,
-        //        IdElementType = ensamble.IdElementType,
-        //        IdMarca = ensamble.IdMarca,
-        //        NumeroSerial = ensamble.NumeroSerial,
-        //        Estado = ensamble.Estado,
-        //        Descripcion = ensamble.Descripcion,
-        //        Renting = ensamble.Renting,
-        //        TipoElemento = elementype.Nombre,
-        //        NombreMarca = marca.Nombre
-        //    };
-
-        //    return Ok(ensambleDto);
-        //}
 
         [HttpGet("Busqueda")]
         public async Task<ActionResult<List<EnsambleDto>>> GetBusqueda(string busqueda)
@@ -233,24 +202,11 @@ namespace Controlinventarios.Controllers
         }
 
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Ensamble>> GetId(int id)
-        {
-            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == id);
-            if (ensamble == null)
-            {
-                return BadRequest($"No sencontraron ensambles con el id {id}");
-            }
-
-            return Ok(ensamble);
-        }
-
-
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, EnsambleCreateDto updateDto)
         {
             var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == id);
-            if (ensamble == null) 
+            if (ensamble == null)
             {
                 return BadRequest($"No se encontro el {id}.");
             }
@@ -278,21 +234,35 @@ namespace Controlinventarios.Controllers
 
         }
 
-   
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
+        [HttpDelete("EliminarConPropiedades/{id}")]
+        public async Task<ActionResult> DeleteEnsamble(int id)
         {
+            // Buscar el ensamble por su id
             var ensamble = await _context.inv_ensamble.FindAsync(id);
 
             if (ensamble == null)
             {
-                return BadRequest($"No existe el id: {id}");
+                return BadRequest($"No existe el ensamble con id: {id}");
             }
 
+            // Buscar todas las propiedades asociadas al ensamble
+            var propiedades = _context.inv_propiedades
+                .Where(p => p.IdEnsamble == id)
+                .ToList();
+
+            // Eliminar las propiedades asociadas
+            if (propiedades.Any())
+            {
+                _context.inv_propiedades.RemoveRange(propiedades);
+            }
+
+            // Eliminar el ensamble
             _context.inv_ensamble.Remove(ensamble);
+
+            // Guardar los cambios en la base de datos
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return Ok("Se elimino correctamente");
         }
 
     }

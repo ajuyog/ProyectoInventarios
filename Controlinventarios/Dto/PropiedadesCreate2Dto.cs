@@ -1,6 +1,9 @@
-﻿public class PropiedadesCreate2Dto
+﻿namespace Controlinventarios.Dto
 {
-    public int IdEnsamble { get; set; }
-    public List <string> Propiedades { get; set; } // Lista de propiedades
+    public class PropiedadesCreate2Dto
+    {
+        public string NumeroSerial { get; set; }
+        public int IdEnsamble { get; set; }
+        public string TagsInput { get; set; } // Cadena separada por comas
+    }
 }
-

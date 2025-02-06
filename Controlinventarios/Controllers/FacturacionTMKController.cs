@@ -98,7 +98,12 @@ namespace Controlinventarios.Controllers
                     {
                         return BadRequest("No se encontraron marcas");
                     }
-                    
+
+                    var tipoElemento = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == factura.IdElementType);
+                    if (tipoElemento == null)
+                    {
+                        return BadRequest("No se encontro un tipo de elemento");
+                    }
 
                     var facturaDto = new EnsambleDto
                     {
@@ -109,7 +114,8 @@ namespace Controlinventarios.Controllers
                         Estado = factura.Estado,
                         Descripcion = factura.Descripcion,
                         Renting = factura.Renting,
-                        NombreMarca = Nombremarca.Nombre
+                        NombreMarca = Nombremarca.Nombre,
+                        TipoElemento = tipoElemento.Nombre
                         //NombreArea = nombreArea.Nombre
                     };
 

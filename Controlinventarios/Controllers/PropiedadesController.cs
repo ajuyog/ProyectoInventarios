@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure;
 using Controlinventarios.Dto;
 using Controlinventarios.Model;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -188,5 +189,87 @@ namespace Controlinventarios.Controllers
 
             return Ok();
         }
+
+        //metodos de prueba de prueba
+
+        [HttpPost("Post de prueba")]
+        public async Task<ActionResult<IEnumerable<Propiedades>>> Post2(PropiedadesCreateDto createDto)
+        {
+            // Validar existencia del ensamble
+            var ensambleExiste = await _context.inv_ensamble
+                .FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
+
+            if (ensambleExiste == null)
+            {
+                return BadRequest($"Ensamble con ID {createDto.IdEnsamble} no existe.");
+            }
+
+            // Validar que la lista de propiedades no esté vacía
+            if (createDto.Propiedades == null || !createDto.Propiedades.Any())
+            {
+                return BadRequest("Debe proporcionar al menos una propiedad.");
+            }
+
+            // Crear una entidad por cada propiedad en la lista
+            var propiedades = createDto.Propiedades.Select(tag => new PropiedadesDto
+            {
+                Propiedad = tag.Trim(), // Campo donde se guarda cada tag
+                IdEnsamble = createDto.IdEnsamble,
+                NumeroSerial = createDto.NumeroSerial
+            }).ToList();
+
+            _context.inv_propiedades.AddRange((IEnumerable<Propiedades>)propiedades);
+            await _context.SaveChangesAsync();
+
+            // Retornar todas las entidades creadas
+            return CreatedAtAction(nameof(GetId), new { id = propiedades.First().id }, propiedades);
+        }
+
+        [HttpPut("Put de prueba/{id}")]
+        public async Task<ActionResult> Update2(int id, PropiedadesCreateDto updateDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var propiedad = await _context.inv_propiedades
+                .FirstOrDefaultAsync(x => x.id == id);
+
+            if (propiedad == null)
+            {
+                return BadRequest("Propiedad no encontrada.");
+            }
+
+            var ensambleExiste = await _context.inv_ensamble
+                .FirstOrDefaultAsync(x => x.Id == updateDto.IdEnsamble);
+
+            if (ensambleExiste == null)
+            {
+                return BadRequest($"El ensamble con ID {updateDto.IdEnsamble} no fue encontrado.");
+            }
+
+            _mapper.Map(updateDto, propiedad);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.inv_propiedades.Any(p => p.id == id))
+                {
+                    return NotFound("Propiedad no encontrada.");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+
     }
 }
