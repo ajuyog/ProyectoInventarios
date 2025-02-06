@@ -97,31 +97,66 @@ namespace Controlinventarios.Controllers
             return Ok(ensamble);
         }
 
+        //[HttpGet("Propiedades concatenadas")]
+        //public async Task<ActionResult<List<EnsambleDto2>>> GetPropiedadesConcatenadas()
+        //{
+        //    var result = await _context.inv_ensamble
+        //        .Join(_context.inv_propiedades,
+        //              ie => ie.Id,
+        //              ip => ip.IdEnsamble,
+        //              (ie, ip) => new { ie.Id, ie.NumeroSerial, ip.Propiedad })
+        //        .OrderByDescending(x => x.Id) // Aquí ordenas primero por Id
+        //        .GroupBy(x => x.NumeroSerial)
+        //        .Select(g => new EnsambleDto2
+        //        {
+        //            id = g.First().Id,
+        //            NumeroSerial = g.Key,
+        //            // ordenas dentro del grupo por id y concatenas las propiedades
+        //            PropiedadesConcatenadas = string.Join("; ", g.OrderBy(x => x.Id).Select(x => x.Propiedad)),
+        //        })
+        //        .ToListAsync();
+
+        //    if (result == null )
+        //    {
+        //        return BadRequest("No se encontraron datos de propiedades concatenadas");
+        //    }
+
+        //    return Ok(result);
+        //}
+
         [HttpGet("Propiedades concatenadas")]
         public async Task<ActionResult<List<EnsambleDto2>>> GetPropiedadesConcatenadas()
         {
+            // Conteo total de registros en la tabla inv_ensamble
+            var totalRegistros = await _context.inv_ensamble.CountAsync();
+
             var result = await _context.inv_ensamble
                 .Join(_context.inv_propiedades,
                       ie => ie.Id,
                       ip => ip.IdEnsamble,
                       (ie, ip) => new { ie.Id, ie.NumeroSerial, ip.Propiedad })
-                .OrderByDescending(x => x.Id) // Aquí ordenas primero por Id
+                .OrderByDescending(x => x.Id) // Ordena primero por Id
                 .GroupBy(x => x.NumeroSerial)
                 .Select(g => new EnsambleDto2
                 {
                     id = g.First().Id,
                     NumeroSerial = g.Key,
-                    // ordenas dentro del grupo por id y concatenas las propiedades
+                    // Ordena dentro del grupo por id y concatena las propiedades
                     PropiedadesConcatenadas = string.Join("; ", g.OrderBy(x => x.Id).Select(x => x.Propiedad)),
                 })
                 .ToListAsync();
 
-            if (result == null )
+            if (result == null || !result.Any())
             {
                 return BadRequest("No se encontraron datos de propiedades concatenadas");
             }
 
-            return Ok(result);
+            // Devuelve el resultado junto con el conteo total de registros
+            return Ok(new
+            {
+                TotalRegistros = totalRegistros,
+                Resultados = result.OrderBy(x => x.id)
+            });
         }
 
         [HttpGet("Busqueda")]

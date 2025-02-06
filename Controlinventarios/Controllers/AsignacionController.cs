@@ -103,27 +103,31 @@ namespace Controlinventarios.Controllers
         [HttpGet("ConsultaLinq/{NumeroSerial}")]
         public async Task<ActionResult<AsignacionDto>> GetById(string NumeroSerial)
         {
-            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.NumeroSerial == NumeroSerial);
-            if  (ensamble == null)
+            // Busca el ensamble que contenga el número de serial (coincidencia parcial)
+            var ensamble = await _context.inv_ensamble
+                .FirstOrDefaultAsync(x => x.NumeroSerial.Contains(NumeroSerial));
+
+            if (ensamble == null)
             {
-                return BadRequest($"No se encontro el serial: {NumeroSerial}");
+                return BadRequest($"No se encontró ningún ensamble con el serial: {NumeroSerial}");
             }
 
-            // Verifica si existe la asignación con el id dado
-            var asignacion = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdEnsamble == ensamble.Id);
+            // Verifica si existe la asignación con el IdEnsamble encontrado
+            var asignacion = await _context.inv_asignacion
+                .FirstOrDefaultAsync(x => x.IdEnsamble == ensamble.Id);
 
             if (asignacion == null)
             {
-                return BadRequest($"No existe el id de asignación: {ensamble.Id}");
+                return BadRequest($"No existe una asignación para el ensamble con Id: {ensamble.Id}");
             }
 
-            // consulta linq para obtener los detalles asociados a la asignacion
+            // Consulta LINQ para obtener los detalles asociados a la asignación
             var query = from ia in _context.inv_asignacion
                         join ip in _context.inv_persona on ia.IdPersona equals ip.userId
                         join a in _context.aspnetusers on ip.userId equals a.Id
                         join ie in _context.inv_ensamble on ia.IdEnsamble equals ie.Id
                         join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
-                        where ie.NumeroSerial == NumeroSerial  // filtro por el id recibido
+                        where ie.NumeroSerial.Contains(NumeroSerial)  // Filtro por coincidencia parcial en NumeroSerial
                         select new AsignacionDto
                         {
                             IdEnsamble = ia.IdEnsamble,
@@ -132,18 +136,15 @@ namespace Controlinventarios.Controllers
                             Numeroserial = ie.NumeroSerial,
                         };
 
-            var result = await query.FirstOrDefaultAsync(); // recupera el primer (y unico) elemento
+            var result = await query.FirstOrDefaultAsync(); // Recupera el primer (y único) elemento
 
             if (result == null)
             {
-                return BadRequest($"No se encontro el id: {NumeroSerial}"); // si no se encuentra, devuelve error
+                return BadRequest($"No se encontró ningún resultado para el serial: {NumeroSerial}");
             }
 
-            return Ok(result); // si existe, devuelve el resultado con un codigo 200
+            return Ok(result); // Si existe, devuelve el resultado con un código 200
         }
-
-
-
 
         [HttpGet("{idEnsamble}")]
         public async Task<ActionResult<AsignacionDto>> GetId(int idEnsamble)
@@ -185,8 +186,6 @@ namespace Controlinventarios.Controllers
             return Ok(result);
         }
 
-
-
         [HttpPost]
         public async Task<ActionResult> Post(AsignacionCreateDto createDto)
         {
@@ -216,7 +215,6 @@ namespace Controlinventarios.Controllers
             // Retorna lo guardado, asegurándose de que el parámetro de la ruta coincida con lo esperado en GetId
             return CreatedAtAction(nameof(GetId), new { idEnsamble = asignacion.IdEnsamble }, asignacion);
         }
-
 
 
         [HttpPut("{userId}")]
@@ -250,7 +248,6 @@ namespace Controlinventarios.Controllers
             // Cambiar el parámetro a 'IdEnsamble', que es el que se espera en GetId
             return CreatedAtAction(nameof(GetId), new { idpersona = asignacion.IdPersona }, asignacion);
         }
-
 
 
         [HttpDelete("{IdEnsamble}")]

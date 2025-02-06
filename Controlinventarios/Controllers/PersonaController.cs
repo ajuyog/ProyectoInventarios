@@ -136,39 +136,49 @@ namespace Controlinventarios.Controllers
         [HttpGet("{Busqueda}")]
         public async Task<ActionResult<List<PersonaDto>>> Get2(string Busqueda)
         {
+            // Busca personas por identificación que contenga el valor de 'Busqueda'
             var personas = await _context.inv_persona.Where(x => x.identificacion != null && x.identificacion.Contains(Busqueda)).OrderByDescending(x => x.userId).ToListAsync();
 
+            // Busca usuarios por nombre de usuario que contenga el valor de 'Busqueda'
             var usuarios = await _context.aspnetusers.Where(x => x.UserName != null && x.UserName.Contains(Busqueda)).ToListAsync();
 
+            // Busca personas por nombres que contengan el valor de 'Busqueda'
             var nombres = await _context.inv_persona.Where(x => x.Nombres != null && x.Nombres.Contains(Busqueda)).ToListAsync();
 
-            if (!personas.Any() && !usuarios.Any())
+            // Si no hay coincidencias en personas, usuarios ni nombres, devuelve un error
+            if (!personas.Any() && !usuarios.Any() && !nombres.Any())
             {
                 return BadRequest($"No se encontraron coincidencias con el criterio: {Busqueda}");
             }
 
+            // Lista para almacenar los resultados transformados a DTO
             var personasDto = new List<PersonaDto>();
 
+            // Procesa las personas encontradas
             foreach (var persona in personas)
             {
+                // Busca el área asociada a la persona
                 var area = await _context.inv_area.FirstOrDefaultAsync(x => x.id == persona.IdArea);
                 if (area == null)
                 {
                     return BadRequest($"No se encontró el área asociada para la persona con identificación: {persona.identificacion}");
                 }
 
+                // Busca el nombre de usuario asociado a la persona
                 var nombreUsuario = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == persona.userId);
                 if (nombreUsuario == null)
                 {
                     return BadRequest($"No se encontró el usuario asociado para la persona con identificación: {persona.identificacion}");
                 }
 
+                // Busca la empresa asociada a la persona
                 var empresa = await _context.inv_empresa.FirstOrDefaultAsync(x => x.id == persona.idEmpresa);
                 if (empresa == null)
                 {
                     return BadRequest($"No se encontró la empresa asociada para la persona con identificación: {persona.identificacion}");
                 }
 
+                // Agrega la persona transformada a DTO a la lista
                 personasDto.Add(new PersonaDto
                 {
                     userId = persona.userId,
@@ -184,22 +194,27 @@ namespace Controlinventarios.Controllers
                 });
             }
 
+            // Procesa los usuarios encontrados
             foreach (var usuario in usuarios)
             {
+                // Busca la persona asociada al usuario
                 var nombre = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == usuario.Id);
                 if (nombre == null)
                 {
                     continue; // Omite usuarios sin persona asociada
                 }
 
+                // Busca el área y la empresa asociadas a la persona
                 var area = await _context.inv_area.FirstOrDefaultAsync(x => x.id == nombre.IdArea);
                 var empresa = await _context.inv_empresa.FirstOrDefaultAsync(x => x.id == nombre.idEmpresa);
 
+                // Si no se encuentra el área o la empresa, devuelve un error
                 if (area == null || empresa == null)
                 {
                     return BadRequest($"No se encontró la empresa o área asociada para el usuario: {usuario.UserName}");
                 }
 
+                // Agrega el usuario transformado a DTO a la lista
                 personasDto.Add(new PersonaDto
                 {
                     userId = usuario.Id,
@@ -214,6 +229,8 @@ namespace Controlinventarios.Controllers
                     Apellidos = nombre.Apellidos
                 });
             }
+
+            // Devuelve la lista de resultados
             return Ok(personasDto);
         }
 
