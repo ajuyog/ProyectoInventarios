@@ -270,6 +270,6 @@ namespace Controlinventarios.Controllers
         //    return NoContent();
         //}
 
-
+     
     }
 }

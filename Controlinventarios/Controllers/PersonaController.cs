@@ -60,7 +60,6 @@ namespace Controlinventarios.Controllers
                     return BadRequest("No se encontraron empresas");
                 }
 
-
                 var personaDto = new PersonaDto
                 {
                     userId = persona.userId,

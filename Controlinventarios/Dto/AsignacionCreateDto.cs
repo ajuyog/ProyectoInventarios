@@ -5,5 +5,7 @@
         public string IdPersona { get; set; }
         public int IdEnsamble { get; set; }
         public DateOnly FechaRegistro { get; set; }
+        public string Nombres { get; set; }
+        public string Apellidos  { get; set; }
     }
 }

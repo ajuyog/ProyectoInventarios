@@ -2,6 +2,7 @@
 using Controlinventarios.Dto;
 using Controlinventarios.Model;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Operation.Polygonize;
@@ -30,8 +31,8 @@ namespace Controlinventarios.Controllers
         }
 
 
-        //[HttpGet]
-        //public async Task<ActionResult<List<AsignacionDto>>> Get()
+        //[HttpGet("Primer get")]
+        //public async Task<ActionResult<List<AsignacionDto>>> Get2()
         //{
         //    var asignacion = await _context.inv_asignacion.ToListAsync();
         //    var asignacionDtos = _mapper.Map<List<AsignacionDto>>(asignacion);
@@ -70,7 +71,8 @@ namespace Controlinventarios.Controllers
                     IdPersona = asignacion.IdPersona,
                     IdEnsamble = asignacion.IdEnsamble,
                     NombrePersona = identificacionPersona.Nombres,
-                    Numeroserial = ensamble.NumeroSerial
+                    Numeroserial = ensamble.NumeroSerial,
+                    FechaRegistro = asignacion.FechaRegistro
                 };
 
             asignacionDtos.Add(asignacionDto);
@@ -133,10 +135,11 @@ namespace Controlinventarios.Controllers
                             IdEnsamble = ia.IdEnsamble,
                             IdPersona = ia.IdPersona,
                             NombrePersona = a.UserName,
-                            Numeroserial = ie.NumeroSerial,
+                            Numeroserial = ie.NumeroSerial,    
+                            FechaRegistro = ia.FechaRegistro
                         };
 
-            var result = await query.FirstOrDefaultAsync(); // Recupera el primer (y único) elemento
+            var result = await query.FirstOrDefaultAsync(); // Recupera el primer (y único) elemento   
 
             if (result == null)
             {
@@ -173,6 +176,7 @@ namespace Controlinventarios.Controllers
                             IdPersona = ia.IdPersona,
                             NombrePersona = a.UserName,
                             Numeroserial = ie.NumeroSerial,
+                            FechaRegistro = ia.FechaRegistro
                         };
 
             var result = await query.FirstOrDefaultAsync(); // recupera el primer (y unico) elemento
@@ -218,6 +222,45 @@ namespace Controlinventarios.Controllers
             return CreatedAtAction(nameof(GetId), new { idEnsamble = asignacion.IdEnsamble }, asignacion);
         }
 
+        //[HttpPost("Prueba")]
+        //public async Task<ActionResult> Post2(AsignacionCreateDto createDto)
+        //{
+        //    // Verificación de la persona por nombres y apellidos
+        //    var personaExiste = await _context.inv_persona
+        //        .FirstOrDefaultAsync(x => x.Nombres == createDto.Nombres && x.Apellidos == createDto.Apellidos);
+
+        //    if (personaExiste == null)
+        //    {
+        //        return BadRequest($"La persona con nombres '{createDto.Nombres}' y apellidos '{createDto.Apellidos}' no fue encontrada.");
+        //    }
+
+        //    // Verificación del id Ensamble
+        //    var ensambleExiste = await _context.inv_ensamble
+        //        .FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
+
+        //    if (ensambleExiste == null)
+        //    {
+        //        return BadRequest($"El ensamble con ID {createDto.IdEnsamble} no fue encontrada.");
+        //    }
+
+        //    // Mapear el DTO a la entidad Asignacion
+        //    var asignacion = _mapper.Map<Asignacion>(createDto);
+
+        //    // Asignar el ID de la persona encontrada
+        //    asignacion.IdPersona = personaExiste.userId;
+
+        //    // Asignar la fecha de registro
+        //    asignacion.FechaRegistro = DateOnly.FromDateTime(DateTime.Now);
+
+        //    // Añadir la entidad al contexto
+        //    _context.inv_asignacion.Add(asignacion);
+
+        //    // Guardar los cambios en la base de datos
+        //    await _context.SaveChangesAsync();
+
+        //    // Retornar la respuesta con la asignación creada
+        //    return CreatedAtAction(nameof(GetId), new { idEnsamble = asignacion.IdEnsamble }, asignacion);
+        //}
 
         [HttpPut("{userId}")]
         public async Task<ActionResult> Update(string userId, AsignacionCreateDto updateDto)
@@ -259,7 +302,7 @@ namespace Controlinventarios.Controllers
 
             if (asignacion == null)
             {
-                return NotFound($"No existe el ensamble: {IdEnsamble}");
+                return BadRequest($"No existe el ensamble: {IdEnsamble}");
             }
 
             _context.inv_asignacion.Remove(asignacion);

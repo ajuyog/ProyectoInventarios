@@ -159,7 +159,7 @@ namespace Controlinventarios.Controllers
             });
         }
 
-        [HttpGet("Busqueda")]
+        [HttpGet("Busqueda/{busqueda}")]
         public async Task<ActionResult<List<EnsambleDto>>> GetBusqueda(string busqueda)
         {
             // Inicializar la consulta con joins para incluir ElementType y Marca
@@ -168,7 +168,7 @@ namespace Controlinventarios.Controllers
                         join m in _context.inv_marca on e.IdMarca equals m.id
                         select new { Ensamble = e, ElementType = et, Marca = m };
 
-            // Si el parámetro de busqueda no está vacío o nulo, aplicar filtros
+            // Si el parámetro de búsqueda no está vacío o nulo, aplicar filtros
             if (!string.IsNullOrEmpty(busqueda))
             {
                 query = query.Where(x => x.Ensamble.NumeroSerial.Contains(busqueda) ||
@@ -179,10 +179,10 @@ namespace Controlinventarios.Controllers
             // Ejecutar la consulta
             var resultados = await query.ToListAsync();
 
-            // Si no hay resultados, retornar badrequest
+            // Si no hay resultados, retornar BadRequest
             if (!resultados.Any())
             {
-                return BadRequest("No existe ningun coincidencia");
+                return BadRequest("No existe ninguna coincidencia");
             }
 
             // Mapear a DTO
