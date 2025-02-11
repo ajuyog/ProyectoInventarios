@@ -7,8 +7,9 @@ namespace Controlinventarios.Dto
         public string IdPersona { get; set; }
         public int IdEnsamble { get; set; }
         public string NombrePersona { get; set; }
-        public string Numeroserial { get; set; }
         public string ApellidoPersona { get; set; }
+        public string Numeroserial { get; set; }
         public DateOnly FechaRegistro { get; set; }
+        public string Email { get; set; }
     }
 }

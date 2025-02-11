@@ -94,6 +94,7 @@ namespace Controlinventarios.Controllers
             return Ok(result);
         }
 
+
         [HttpGet("Prueba")]
         public async Task<ActionResult<List<AsignacionDto>>> Get4()
         {
@@ -102,7 +103,7 @@ namespace Controlinventarios.Controllers
                                    join ip in _context.inv_persona on a.Id equals ip.userId
                                    select new AsignacionDto
                                    {
-                                       Numeroserial = a.Email,
+                                       Email = a.Email,
                                        NombrePersona = ip.Nombres,
                                        IdEnsamble = ia.IdEnsamble,
                                        ApellidoPersona = ip.Apellidos,
@@ -117,6 +118,7 @@ namespace Controlinventarios.Controllers
 
             return Ok(resultado);
         }
+
 
         [HttpGet("ConsultaLinq/{NumeroSerial}")]
         public async Task<ActionResult<AsignacionDto>> GetById(string NumeroSerial)
@@ -156,7 +158,6 @@ namespace Controlinventarios.Controllers
 
             return Ok(result); // Devuelve la lista con todos los resultados encontrados
         }
-
 
 
         [HttpGet("{idEnsamble}")]
@@ -209,7 +210,6 @@ namespace Controlinventarios.Controllers
         }
 
 
-
         [HttpPost]
         public async Task<ActionResult> Post(AsignacionCreateDto createDto)
         {
@@ -248,45 +248,6 @@ namespace Controlinventarios.Controllers
             return CreatedAtAction(nameof(GetId), new { idEnsamble = asignacion.IdEnsamble }, asignacion);
         }
 
-        //[HttpPost("Prueba")]
-        //public async Task<ActionResult> Post2(AsignacionCreateDto createDto)
-        //{
-        //    // Verificación de la persona por nombres y apellidos
-        //    var personaExiste = await _context.inv_persona
-        //        .FirstOrDefaultAsync(x => x.Nombres == createDto.Nombres && x.Apellidos == createDto.Apellidos);
-
-        //    if (personaExiste == null)
-        //    {
-        //        return BadRequest($"La persona con nombres '{createDto.Nombres}' y apellidos '{createDto.Apellidos}' no fue encontrada.");
-        //    }
-
-        //    // Verificación del id Ensamble
-        //    var ensambleExiste = await _context.inv_ensamble
-        //        .FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
-
-        //    if (ensambleExiste == null)
-        //    {
-        //        return BadRequest($"El ensamble con ID {createDto.IdEnsamble} no fue encontrada.");
-        //    }
-
-        //    // Mapear el DTO a la entidad Asignacion
-        //    var asignacion = _mapper.Map<Asignacion>(createDto);
-
-        //    // Asignar el ID de la persona encontrada
-        //    asignacion.IdPersona = personaExiste.userId;
-
-        //    // Asignar la fecha de registro
-        //    asignacion.FechaRegistro = DateOnly.FromDateTime(DateTime.Now);
-
-        //    // Añadir la entidad al contexto
-        //    _context.inv_asignacion.Add(asignacion);
-
-        //    // Guardar los cambios en la base de datos
-        //    await _context.SaveChangesAsync();
-
-        //    // Retornar la respuesta con la asignación creada
-        //    return CreatedAtAction(nameof(GetId), new { idEnsamble = asignacion.IdEnsamble }, asignacion);
-        //}
 
         [HttpPut("{userId}")]
         public async Task<ActionResult> Update(string userId, AsignacionCreateDto updateDto)
