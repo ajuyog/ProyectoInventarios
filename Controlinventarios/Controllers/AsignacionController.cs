@@ -31,15 +31,6 @@ namespace Controlinventarios.Controllers
         }
 
 
-        //[HttpGet("Primer get")]
-        //public async Task<ActionResult<List<AsignacionDto>>> Get2()
-        //{
-        //    var asignacion = await _context.inv_asignacion.ToListAsync();
-        //    var asignacionDtos = _mapper.Map<List<AsignacionDto>>(asignacion);
-
-        //    return Ok(asignacionDtos);
-        //}
-
         [HttpGet]
         public async Task<ActionResult<List<AsignacionDto>>> Get()
         {
@@ -54,7 +45,7 @@ namespace Controlinventarios.Controllers
 
             foreach (var asignacion in asignaciones)
             {
-                var identificacionPersona = await _context.inv_persona.FirstOrDefaultAsync(o => o.userId == asignacion.IdPersona);
+                var identificacionPersona = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == asignacion.IdPersona);
                 if (identificacionPersona == null)
                 {
                     return BadRequest("El nombre no se encontro");
@@ -81,6 +72,7 @@ namespace Controlinventarios.Controllers
             return Ok(asignacionDtos);
         }
 
+
         [HttpGet("Consulta linq")]
         public async Task<ActionResult<List<AsignacionDto>>> Get3()
         {
@@ -102,28 +94,21 @@ namespace Controlinventarios.Controllers
             return Ok(result);
         }
 
+
         [HttpGet("ConsultaLinq/{NumeroSerial}")]
         public async Task<ActionResult<AsignacionDto>> GetById(string NumeroSerial)
         {
             // Busca el ensamble que contenga el número de serial (coincidencia parcial)
-            var ensamble = await _context.inv_ensamble
-                .FirstOrDefaultAsync(x => x.NumeroSerial.Contains(NumeroSerial));
+            var ensambles = await _context.inv_ensamble
+                .Where(x => x.NumeroSerial.Contains(NumeroSerial))
+                .ToListAsync();
 
-            if (ensamble == null)
+            if (ensambles == null || !ensambles.Any())
             {
                 return BadRequest($"No se encontró ningún ensamble con el serial: {NumeroSerial}");
             }
 
-            // Verifica si existe la asignación con el IdEnsamble encontrado
-            var asignacion = await _context.inv_asignacion
-                .FirstOrDefaultAsync(x => x.IdEnsamble == ensamble.Id);
-
-            if (asignacion == null)
-            {
-                return BadRequest($"No existe una asignación para el ensamble con Id: {ensamble.Id}");
-            }
-
-            // Consulta LINQ para obtener los detalles asociados a la asignación
+            // Consulta LINQ para obtener los detalles asociados a las asignaciones de todos los ensambles encontrados
             var query = from ia in _context.inv_asignacion
                         join ip in _context.inv_persona on ia.IdPersona equals ip.userId
                         join a in _context.aspnetusers on ip.userId equals a.Id
@@ -135,41 +120,52 @@ namespace Controlinventarios.Controllers
                             IdEnsamble = ia.IdEnsamble,
                             IdPersona = ia.IdPersona,
                             NombrePersona = a.UserName,
-                            Numeroserial = ie.NumeroSerial,    
+                            Numeroserial = ie.NumeroSerial,
                             FechaRegistro = ia.FechaRegistro
                         };
 
-            var result = await query.FirstOrDefaultAsync(); // Recupera el primer (y único) elemento   
+            var result = await query.ToListAsync(); // Recupera todos los resultados que coinciden    
 
-            if (result == null)
+            if (result == null || !result.Any())
             {
                 return BadRequest($"No se encontró ningún resultado para el serial: {NumeroSerial}");
             }
 
-            return Ok(result); // Si existe, devuelve el resultado con un código 200
+            return Ok(result); // Devuelve la lista con todos los resultados encontrados
         }
+
+
 
         [HttpGet("{idEnsamble}")]
         public async Task<ActionResult<AsignacionDto>> GetId(int idEnsamble)
         {
-            var asignacion = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdEnsamble == idEnsamble);
-            if (asignacion == null)
+            // Primero, buscamos la asignación correspondiente al idEnsamble
+            var asignacion = await _context.inv_asignacion
+                .Where(x => x.IdEnsamble == idEnsamble) // Filtramos por el IdEnsamble
+                .ToListAsync();
+
+            if (asignacion == null || !asignacion.Any())
             {
-                return BadRequest($"No existe el id ensamble: {idEnsamble}");
+                return BadRequest($"No existe el id de ensamble: {idEnsamble}");
             }
 
-            var nombreEnsamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == asignacion.IdEnsamble);
+            // Si encuentras la asignación, puedes buscar el nombre del ensamble
+            var nombreEnsamble = await _context.inv_ensamble
+                .Where(x => x.Id == idEnsamble)
+                .FirstOrDefaultAsync();
+
             if (nombreEnsamble == null)
             {
-                return BadRequest("No se encontraron ensambles ");
+                return BadRequest("No se encontraron ensambles con ese id.");
             }
 
+            // Consulta LINQ para obtener los detalles asociados a las asignaciones
             var query = from ia in _context.inv_asignacion
                         join ip in _context.inv_persona on ia.IdPersona equals ip.userId
                         join a in _context.aspnetusers on ip.userId equals a.Id
                         join ie in _context.inv_ensamble on ia.IdEnsamble equals ie.Id
                         join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
-                        where ia.IdEnsamble == idEnsamble  // filtro por el id recibido
+                        where ia.IdEnsamble == idEnsamble  // Filtro por el id recibido
                         select new AsignacionDto
                         {
                             IdEnsamble = ia.IdEnsamble,
@@ -179,16 +175,17 @@ namespace Controlinventarios.Controllers
                             FechaRegistro = ia.FechaRegistro
                         };
 
-            var result = await query.FirstOrDefaultAsync(); // recupera el primer (y unico) elemento
+            var result = await query.ToListAsync(); // Devuelve todos los resultados que coinciden
 
-            if (result == null)
+            if (result == null || !result.Any())
             {
-                return BadRequest($"No se encontro el id: {idEnsamble}"); // si no se encuentra, devuelve error
+                return BadRequest($"No se encontró ninguna asignación para el id de ensamble: {idEnsamble}");
             }
 
-            //var asignacionDto = _mapper.Map<AsignacionDto>(asignacion);
-            return Ok(result);
+            return Ok(result); // Devuelve la lista con todos los resultados encontrados
         }
+
+
 
         [HttpPost]
         public async Task<ActionResult> Post(AsignacionCreateDto createDto)

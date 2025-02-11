@@ -53,7 +53,7 @@ namespace Controlinventarios.Controllers
 
                 if (facturaName == null)
                 {
-                    return BadRequest($"No se encontró el ensamble para la propiedad: {facturaName}");
+                    return BadRequest($"No se encontró el ensamble para la propiedad: {factura.IdEnsamble}");
                 }
 
                 var facturaDto = new FacturacionTMKDto

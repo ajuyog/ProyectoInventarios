@@ -136,7 +136,7 @@ namespace Controlinventarios.Controllers
                       ip => ip.IdEnsamble,
                       (ie, ip) => new { ie.Id, ie.NumeroSerial, ip.Propiedad })
                 .OrderByDescending(x => x.Id) // Ordena primero por Id
-                .GroupBy(x => x.NumeroSerial)
+                .GroupBy(x => x.NumeroSerial)   
                 .Select(g => new EnsambleDto2
                 {
                     id = g.First().Id,
