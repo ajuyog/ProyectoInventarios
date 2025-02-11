@@ -94,6 +94,29 @@ namespace Controlinventarios.Controllers
             return Ok(result);
         }
 
+        [HttpGet("Prueba")]
+        public async Task<ActionResult<List<AsignacionDto>>> Get4()
+        {
+            var resultado = await (from ia in _context.inv_asignacion
+                                   join a in _context.aspnetusers on ia.IdPersona equals a.Id
+                                   join ip in _context.inv_persona on a.Id equals ip.userId
+                                   select new AsignacionDto
+                                   {
+                                       Numeroserial = a.Email,
+                                       NombrePersona = ip.Nombres,
+                                       IdEnsamble = ia.IdEnsamble,
+                                       ApellidoPersona = ip.Apellidos,
+                                       FechaRegistro = ia.FechaRegistro,
+                                       IdPersona = ia.IdPersona
+                                   }).ToListAsync();
+
+            if (resultado == null || !resultado.Any())
+            {
+                return BadRequest("No se encontraron elementos asignados.");
+            }
+
+            return Ok(resultado);
+        }
 
         [HttpGet("ConsultaLinq/{NumeroSerial}")]
         public async Task<ActionResult<AsignacionDto>> GetById(string NumeroSerial)
@@ -198,6 +221,12 @@ namespace Controlinventarios.Controllers
             if (usuarioExiste == null)
             {
                 return BadRequest($"La persona con el ID {createDto.IdPersona} no fue encontrada.");
+            }
+
+            var usuario = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == usuarioExiste.userId);
+            if (usuario == null)
+            {
+                return BadRequest("No se encontraron usuarios");
             }
 
             // Verificación del id Ensamble
