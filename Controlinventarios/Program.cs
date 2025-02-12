@@ -13,4 +13,4 @@ var app = builder.Build();
 startup.Configure(app, app.Environment);
 //builder.Services.AddAutoMapper(typeof(Startup));
 
-app.Run();
+app.Run(); 

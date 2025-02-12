@@ -152,7 +152,7 @@ namespace Controlinventarios.Controllers
         }
 
 
-        [HttpPut]
+        [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, PropiedadesCreateDto updateDto)
         {
             var propiedad = await _context.inv_propiedades.FirstOrDefaultAsync(x => x.id == id);

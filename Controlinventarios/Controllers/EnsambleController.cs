@@ -235,6 +235,97 @@ namespace Controlinventarios.Controllers
             // retorna lo guardar
             return CreatedAtAction(nameof(GetId), new { id = ensamble.Id }, ensamble);
         }
+        
+        [HttpPost("Se asigna al área TI")]
+        public async Task<ActionResult> Post2(EnsambleCreateDto createDto)
+        {
+            // El DTO verifica la tabla
+            var ensamble = _mapper.Map<Ensamble>(createDto);
+
+            // Verificación de ElementType
+            var elementoExiste = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == createDto.IdElementType);
+            if (elementoExiste == null)
+            {
+                return BadRequest($"El tipo de elemento con el ID {createDto.IdElementType} no fue encontrado.");
+            }
+
+            // Verificación sobre la marca
+            var marcaExiste = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == createDto.IdMarca);
+            if (marcaExiste == null)
+            {
+                return BadRequest($"La marca con ID {createDto.IdMarca} no fue encontrada.");
+            }
+
+            // Asigna la fecha actual al campo FechaRegistroEquipo
+            ensamble.FechaRegistroEquipo = DateOnly.FromDateTime(DateTime.Now);
+
+            // Añade la entidad al contexto
+            _context.inv_ensamble.Add(ensamble);
+
+            // Guarda los datos en la base de datos
+            await _context.SaveChangesAsync();
+
+            // Obtener usuarios del área de TI
+            var usuariosAreaTI = await _context.inv_persona
+                .Where(x => x.IdArea == 1) // Filtra por el área de TI (ajusta el campo según tu modelo)
+                .ToListAsync();
+
+            if (usuariosAreaTI.Count == 0)
+            {
+                return BadRequest("No se encontraron usuarios en el área de TI para asignar.");
+            }
+
+            // Seleccionar una cantidad específica de usuarios al azar (por ejemplo, 3)
+            int cantidadUsuariosAsignar = 1; // Puedes ajustar este número según tus necesidades
+            var usuariosSeleccionados = usuariosAreaTI
+                .OrderBy(x => Guid.NewGuid()) // Ordenar aleatoriamente
+                .Take(cantidadUsuariosAsignar) // Seleccionar la cantidad específica de usuarios
+                .ToList();
+
+            // Crear una asignación para cada usuario seleccionado
+            foreach (var usuario in usuariosSeleccionados)
+            {
+                var asignacionCreateDto = new AsignacionCreateDto
+                {
+                    IdPersona = usuario.userId, // Asignar al usuario seleccionado
+                    IdEnsamble = ensamble.Id,
+                    // Otros campos necesarios para la asignación
+                };
+
+                var asignacion = _mapper.Map<Asignacion>(asignacionCreateDto);
+
+                // Verificación del id de usuario
+                var usuarioExiste = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == asignacionCreateDto.IdPersona);
+                if (usuarioExiste == null)
+                {
+                    return BadRequest($"La persona con el ID {asignacionCreateDto.IdPersona} no fue encontrada.");
+                }
+
+                var usuarioAsp = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == usuarioExiste.userId);
+                if (usuarioAsp == null)
+                {
+                    return BadRequest("No se encontraron usuarios");
+                }
+
+                // Verificación del id Ensamble
+                var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == asignacionCreateDto.IdEnsamble);
+                if (ensambleExiste == null)
+                {
+                    return BadRequest($"El ensamble con ID {asignacionCreateDto.IdEnsamble} no fue encontrado.");
+                }
+
+                asignacion.FechaRegistro = DateOnly.FromDateTime(DateTime.Now);
+
+                // Añade la entidad al contexto
+                _context.inv_asignacion.Add(asignacion);
+            }
+
+            // Guardar los datos en la base de datos
+            await _context.SaveChangesAsync();
+
+            // Retorna lo guardado
+            return CreatedAtAction(nameof(GetId), new { id = ensamble.Id }, ensamble);
+        }
 
 
         [HttpPut("{id}")]
