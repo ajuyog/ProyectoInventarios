@@ -63,7 +63,7 @@ namespace Controlinventarios.Controllers
                     Propiedad = propiedad.Propiedad,
                     IdEnsamble = propiedad.IdEnsamble,
                     EnsambleName = ensambleName.NumeroSerial,
-                    Propiedades = propiedad.Propiedadess
+                    //Propiedades = propiedad.Propiedadess
                 };
 
                 propiedadesDtos.Add(propiedadDto);
@@ -99,7 +99,7 @@ namespace Controlinventarios.Controllers
                 Propiedad = propiedad.Propiedad,
                 IdEnsamble = propiedad.IdEnsamble,
                 EnsambleName = ensambleName.NumeroSerial,
-                Propiedades = propiedad.Propiedadess
+                //Propiedades = propiedad.Propiedadess
             };
 
             return Ok(propiedadDto);
