@@ -236,7 +236,7 @@ namespace Controlinventarios.Controllers
             return CreatedAtAction(nameof(GetId), new { id = ensamble.Id }, ensamble);
         }
         
-        [HttpPost("Se asigna al área TI")]
+        [HttpPost("AsignacionAuto")]
         public async Task<ActionResult> Post2(EnsambleCreateDto createDto)
         {
             // El DTO verifica la tabla
