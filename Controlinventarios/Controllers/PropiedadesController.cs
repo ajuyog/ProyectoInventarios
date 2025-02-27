@@ -151,6 +151,56 @@ namespace Controlinventarios.Controllers
             return CreatedAtAction(nameof(GetId), new { id = propiedad.id }, propiedad);
         }
 
+        [HttpPost("Recibir listado de propiedades")]
+        public async Task<ActionResult> RecibirPropiedades([FromForm] PropiedadesCreateDto createDto)
+        {
+            // Validar que el DTO no sea nulo y que la lista de propiedades no esté vacía
+            if (createDto == null || createDto.Propiedades == null || !createDto.Propiedades.Any())
+            {
+                return BadRequest("Debe ingresar al menos una propiedad.");
+            }
+
+            // Verificar si el ensamble existe en la base de datos
+            // Se busca el ensamble por su ID en la tabla inv_ensamble
+            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(e => e.Id == createDto.IdEnsamble);
+
+            // Si el ensamble no existe, devolver un error
+            if (ensamble == null)
+            {
+                return BadRequest($"El ensamble con ID {createDto.IdEnsamble} no existe.");
+            }
+
+            // Crear una lista para almacenar las propiedades que se van a crear
+            var propiedadesCreadas = new List<Propiedades>();
+
+            // Iterar sobre cada propiedad en la lista del DTO
+            foreach (var prop in createDto.Propiedades)
+            {
+                // Crear un nuevo objeto Propiedades para cada propiedad en la lista
+                var propiedad = new Propiedades
+                {
+                    Propiedad = prop.Trim(), // Asignar el valor de la propiedad (eliminando espacios en blanco)
+                    IdEnsamble = ensamble.Id // Asignar el ID del ensamble existente
+                };
+
+                // Agregar la propiedad creada a la lista de propiedadesCreadas
+                propiedadesCreadas.Add(propiedad);
+            }
+
+            // Agregar todas las propiedades creadas al contexto de la base de datos
+            _context.inv_propiedades.AddRange(propiedadesCreadas);
+
+            // Guardar los cambios en la base de datos
+            await _context.SaveChangesAsync();
+
+            // Retornar una respuesta exitosa con un mensaje y los datos creados
+            return Ok(new
+            {
+                Mensaje = "Propiedades registradas con éxito", // Mensaje de éxito
+                EnsambleId = ensamble.Id, // ID del ensamble al que se asociaron las propiedades
+                PropiedadesCreadas = propiedadesCreadas.Select(p => p.Propiedad).ToList() // Lista de propiedades creadas
+            });
+        }
 
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, PropiedadesCreateDto updateDto)

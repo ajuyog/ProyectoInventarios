@@ -258,10 +258,20 @@ namespace Controlinventarios.Controllers
         }
 
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult> Update(string id, PersonaCreateDto updateDto)
+        [HttpPut("{userId}")]
+        public async Task<ActionResult> Update(string userId, PersonaUpdateDto updateDto)
         {
-            var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == id);
+            var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == userId);
+            if (persona == null)
+            {
+                return BadRequest($"No ecnontraron personas con el id: {userId}");
+            }
+
+            var personExiste = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == persona.userId);
+            if (personExiste == null)
+            {
+                return BadRequest($"No existe una persona con el id:{persona.userId}");
+            }
 
             //verificacion si existe el area
             var areaExiste = await _context.inv_area.FirstOrDefaultAsync(x => x.id == updateDto.IdArea);
@@ -275,10 +285,9 @@ namespace Controlinventarios.Controllers
             _context.inv_persona.Update(persona);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetId), new { persona.userId }, persona);
+            return Ok("Se realizaron los cambios correctamente");
 
         }
-
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
@@ -293,7 +302,7 @@ namespace Controlinventarios.Controllers
             _context.inv_persona.Remove(persona);
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return Ok($"Se ellimino correctamente la persona con el id {id}");
         }
     }
 }

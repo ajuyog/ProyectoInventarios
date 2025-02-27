@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Operation.Polygonize;
 using Newtonsoft.Json.Linq;
+using NuGet.Protocol;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -248,37 +249,121 @@ namespace Controlinventarios.Controllers
             return CreatedAtAction(nameof(GetId), new { idEnsamble = asignacion.IdEnsamble }, asignacion);
         }
 
+        //[HttpPut("{id}")]
+        //public async Task<ActionResult> Update(string id, Asignacion updateDto)
+        //{
+        //    var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == id);
+        //    if (persona == null)
+        //    {
+        //        return BadRequest($"No ecnontraron personas con el id: {id}");
+        //    }
 
-        [HttpPut("{userId}")]
-        public async Task<ActionResult> Update(string userId, AsignacionCreateDto updateDto)
+        //    var personExiste = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == persona.userId);
+        //    if (personExiste == null)
+        //    {
+        //        return BadRequest($"No existe una persona con el id:{persona.userId}");
+        //    }
+
+        //    //verificacion si existe el area
+        //    var areaExiste = await _context.inv_area.FirstOrDefaultAsync(x => x.id == updateDto.IdArea);
+        //    if (areaExiste == null)
+        //    {
+        //        return BadRequest($"El area con el ID {updateDto.IdArea} no fue encontrado.");
+        //    }
+
+        //    persona = _mapper.Map(updateDto, persona);
+
+        //    _context.inv_persona.Update(persona);
+        //    await _context.SaveChangesAsync();
+
+        //    return CreatedAtAction(nameof(GetId), new { persona.userId }, persona);
+
+        //}
+
+        [HttpPut("{idEnsamble}")]
+        public async Task<ActionResult> Update(int idEnsamble, AsignacionUpdateDto updateDto)
         {
-            var asignacion = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdPersona == userId);
-            if (asignacion == null)
-            {
-                return BadRequest($"No se encontraron asignaciones para el el usuario: {userId}");
-            }
+            var ensambleExiste = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdEnsamble == idEnsamble);
 
-            // Verificación del id de usuario
-            var usuarioExiste = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == updateDto.IdPersona);
-            if (usuarioExiste == null)
-            {
-                return BadRequest($"La persona con el ID {updateDto.IdPersona} no fue encontrado.");
-            }
-
-            // Verificación del id de Ensamble
-            var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == asignacion.IdEnsamble);
             if (ensambleExiste == null)
             {
-                return BadRequest($"El ensamble con ID {asignacion.IdEnsamble} no fue encontrado.");
+                return BadRequest($"No se encontró un ensamble con el id: {idEnsamble}");
             }
 
-            asignacion = _mapper.Map(updateDto, asignacion);
+            ensambleExiste = _mapper.Map(updateDto, ensambleExiste);
 
-            _context.inv_asignacion.Update(asignacion);
+            _context.inv_asignacion.Update(ensambleExiste);
             await _context.SaveChangesAsync();
 
-            // Cambiar el parámetro a 'IdEnsamble', que es el que se espera en GetId
-            return CreatedAtAction(nameof(GetId), new { idpersona = asignacion.IdPersona }, asignacion);
+            // Se usa el nombre correcto del parámetro para la acción GetId
+            return CreatedAtAction(nameof(GetId), new { idEnsamble = ensambleExiste.IdEnsamble }, ensambleExiste);
+        }
+
+        //[HttpPut("Prueba/{idEnsamble}")]
+        //public async Task<ActionResult> Update(int idEnsamble, AsignacionUpdateDto updateDto)
+        //{
+        //    // Verificar si la asignación existe
+        //    var asignacionExistente = await _context.inv_asignacion
+        //        .FirstOrDefaultAsync(x => x.IdEnsamble == idEnsamble);
+
+        //    if (asignacionExistente == null)
+        //    {
+        //        return BadRequest($"No se encontró la asignación con el id de ensamble: {idEnsamble}");
+        //    }
+
+        //    // Verificación de si la persona existe con el IdPersona
+        //    var persona = await _context.inv_persona
+        //        .FirstOrDefaultAsync(x => x.userId == updateDto.IdPersona);
+
+        //    if (persona == null)
+        //    {
+        //        return BadRequest($"No se encontró una persona con el Id: {updateDto.IdPersona}");
+        //    }
+
+        //    // Verificación del ensamble con el IdEnsamble
+        //    var ensamble = await _context.inv_ensamble
+        //        .FirstOrDefaultAsync(x => x.Id == updateDto.IdEnsamble);
+
+        //    if (ensamble == null)
+        //    {
+        //        return BadRequest($"No se encontró el ensamble con el Id: {updateDto.IdEnsamble}");
+        //    }
+
+        //    await _context.SaveChangesAsync(); // Guardar los cambios para insertar la nueva entidad
+
+        //    // Retornar la nueva asignación
+        //    return CreatedAtAction(nameof(GetId), new { updateDto.IdEnsamble }, asignacionExistente);
+        //}
+
+
+        [HttpPatch("CambiarAsignado/{EnsambleId}")]
+        public async Task<ActionResult> Patch(int EnsambleId, AsignacionPatchDto patchDto)
+        {
+            // Verificar si el ensamble existe
+            var asignacionExistente = await _context.inv_asignacion
+                .FirstOrDefaultAsync(x => x.IdEnsamble == EnsambleId);
+
+            if (asignacionExistente == null)
+            {
+                return BadRequest($"El ensamble {EnsambleId} no existe");
+            }
+
+            // Verificar si el nuevo usuario asignado existe
+            var usuarioExiste = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == patchDto.IdPersona);
+                
+            if (usuarioExiste == null)
+            {
+                return BadRequest($"No existe el usuario: {patchDto.IdPersona}");
+            }
+
+            // Actualizar solo la propiedad IdPersona
+            asignacionExistente.IdPersona = patchDto.IdPersona;
+
+            // Guardar los cambios en la base de datos
+            await _context.SaveChangesAsync();
+
+            // Retornar la respuesta con CreatedAtAction
+            return CreatedAtAction(nameof(GetId), new { idEnsamble = asignacionExistente.IdEnsamble }, asignacionExistente);
         }
 
 
@@ -297,6 +382,5 @@ namespace Controlinventarios.Controllers
 
             return Ok($"Se eliminó el ensamble: {IdEnsamble}");
         }
-
     }
 }

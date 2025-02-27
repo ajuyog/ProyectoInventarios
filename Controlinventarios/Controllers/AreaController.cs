@@ -76,7 +76,7 @@ namespace Controlinventarios.Controllers
 
             if (area == null)
             {
-                return NotFound($"Área con id {id} no encontrada.");
+                return BadRequest($"Área con id {id} no encontrada.");
             }
 
             area = _mapper.Map(updateDto, area);
