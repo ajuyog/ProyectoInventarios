@@ -30,39 +30,48 @@ namespace Controlinventarios.Controllers
         [HttpGet]
         public async Task<ActionResult<List<PropiedadesDto>>> Get()
         {
+            // obtiene todas las propiedades de la base de datos y las convierte en una lista.
             var propiedades = await _context.inv_propiedades.ToListAsync();
 
+            // verifica si la lista de propiedades está vacía.
             if (!propiedades.Any())
             {
+                // si no hay propiedades, devuelve un error 400 (Bad Request) con un mensaje.
                 return BadRequest("No se encontraron propiedades.");
             }
 
+            // crea una lista vacía para almacenar los DTOs de las propiedades.
             var propiedadesDtos = new List<PropiedadesDto>();
 
+            // itera sobre cada propiedad en la lista de propiedades.
             foreach (var propiedad in propiedades)
             {
+                // busca el ensamble asociado a la propiedad en la base de datos usando el IdEnsamble.
                 var ensambleName = await _context.inv_ensamble.FirstOrDefaultAsync(o => o.Id == propiedad.IdEnsamble);
 
+                // verifica si el ensamble existe.
                 if (ensambleName == null)
                 {
+                    // si no se encuentra el ensamble, devuelve un error 400 (Bad Request) con un mensaje.
                     return BadRequest($"No se encontró el ensamble para la propiedad con ID {propiedad.id}");
                 }
 
+                // crea un DTO para la propiedad actual y asigna los valores correspondientes.
                 var propiedadDto = new PropiedadesDto
                 {
-                    id = propiedad.id,
-                    Propiedad = propiedad.Propiedad,
-                    IdEnsamble = propiedad.IdEnsamble,
-                    EnsambleName = ensambleName.NumeroSerial,
-                    //Propiedades = propiedad.Propiedadess
+                    id = propiedad.id, // asigna el ID de la propiedad.
+                    Propiedad = propiedad.Propiedad, // asigna el nombre de la propiedad.
+                    IdEnsamble = propiedad.IdEnsamble, // asigna el ID del ensamble asociado.
+                    EnsambleName = ensambleName.NumeroSerial, // asigna el número de serie del ensamble.
                 };
 
+                // agrega el DTO de la propiedad a la lista de DTOs.
                 propiedadesDtos.Add(propiedadDto);
             }
 
+            // devuelve una respuesta 200 (OK) con la lista de DTOs de las propiedades.
             return Ok(propiedadesDtos);
         }
-
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PropiedadesDto>> GetId(int id)
@@ -89,8 +98,7 @@ namespace Controlinventarios.Controllers
                 id = propiedad.id,
                 Propiedad = propiedad.Propiedad,
                 IdEnsamble = propiedad.IdEnsamble,
-                EnsambleName = ensambleName.NumeroSerial,
-                //Propiedades = propiedad.Propiedadess
+                EnsambleName = ensambleName.NumeroSerial
             };
 
             return Ok(propiedadDto);
@@ -179,41 +187,56 @@ namespace Controlinventarios.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, PropiedadesCreateDto updateDto)
         {
+            // busca la propiedad en la base de datos usando el ID proporcionado en la ruta.
             var propiedad = await _context.inv_propiedades.FirstOrDefaultAsync(x => x.id == id);
 
-            //Verificacion del id Ensamble
+            // verifica si el ensamble asociado a la propiedad existe en la base de datos.
             var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == updateDto.IdEnsamble);
             if (ensambleExiste == null)
             {
+                // si el ensamble no existe, devuelve un error 400 (Bad Request) con un mensaje.
                 return BadRequest($"El ensamble con ID {updateDto.IdEnsamble} no fue encontrado.");
             }
 
+            // mapea los datos del DTO (updateDto) a la entidad existente (propiedad).
+            // esto actualiza los campos de la entidad con los valores proporcionados en el DTO.
             propiedad = _mapper.Map(updateDto, propiedad);
 
+            // marca la entidad como modificada en el contexto de la base de datos.
             _context.inv_propiedades.Update(propiedad);
+
+            // guarda los cambios en la base de datos de manera asíncrona.
             await _context.SaveChangesAsync();
 
+            // devuelve una respuesta 201 (Created) con la ubicación del recurso actualizado.
+            // createdAtAction redirige a la acción "GetId" para obtener los detalles de la propiedad actualizada.
             return CreatedAtAction(nameof(GetId), new { propiedad.id }, propiedad);
-
         }
 
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
+            // busca la propiedad en la base de datos usando el ID proporcionado en la ruta.
             var propiedad = await _context.inv_propiedades.FindAsync(id);
 
+            // verifica si la propiedad existe.
             if (propiedad == null)
             {
+                // si la propiedad no existe, devuelve un error 400 (Bad Request) con un mensaje.
                 return BadRequest($"No existe el id: {id}");
             }
 
+            // marca la propiedad para ser eliminada del contexto de la base de datos.
             _context.inv_propiedades.Remove(propiedad);
+
+            // guarda los cambios en la base de datos de manera asíncrona.
             await _context.SaveChangesAsync();
 
+            // devuelve una respuesta 200 (OK) indicando que la operación se completó con éxito.
             return Ok();
         }
 
-        
+
     }
 }
