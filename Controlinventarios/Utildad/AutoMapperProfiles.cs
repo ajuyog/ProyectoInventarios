@@ -12,10 +12,10 @@ namespace Controlinventarios.Utilidad
     {
         public AutoMapperProfiles()
         {
-            //Incio mapeo de are 
+            //Incio mapeo de area
             CreateMap<AreaCreateDto, Area>().ReverseMap();
             CreateMap<Area, AreaDto>().ReverseMap();
-            //Fin de mapeo de are
+            //Fin de mapeo de area
 
             //Incio mapeo Persona
             CreateMap<PersonaCreateDto, Persona>().ReverseMap();
@@ -27,10 +27,6 @@ namespace Controlinventarios.Utilidad
             CreateMap<ElementTypeCreateDto, ElementType>().ReverseMap();
             CreateMap<ElementType, ElementTypeDto>().ReverseMap();
             //Fin Mapeo TipoElemento 
-
-
-            //CreateMap<EnsambleCreateDto, Ensamble>().ReverseMap();
-            //CreateMap<Ensamble, EnsambleDto>().ReverseMap();
 
             //Inicio mapeo Propiedades
             CreateMap<PropiedadesCreateDto, Propiedades>().ReverseMap();

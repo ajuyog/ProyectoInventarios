@@ -5,6 +5,7 @@ using Controlinventarios.Model;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -152,53 +153,59 @@ namespace Controlinventarios.Controllers
         }
 
         [HttpPost("Recibir listado de propiedades")]
-        public async Task<ActionResult> RecibirPropiedades([FromForm] PropiedadesCreateDto createDto)
+        public async Task<ActionResult> RecibirPropiedades(PropiedadesCreateDto createDto)
         {
-            // Validar que el DTO no sea nulo y que la lista de propiedades no esté vacía
-            if (createDto == null || createDto.Propiedades == null || !createDto.Propiedades.Any())
+            // validar que el DTO no sea nulo y que la cadena de propiedades no este vacía
+            if (createDto == null || string.IsNullOrEmpty(createDto.Propiedad))
             {
                 return BadRequest("Debe ingresar al menos una propiedad.");
             }
 
-            // Verificar si el ensamble existe en la base de datos
-            // Se busca el ensamble por su ID en la tabla inv_ensamble
+            // verificar si el ensamble existe en la base de datos
             var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(e => e.Id == createDto.IdEnsamble);
-
-            // Si el ensamble no existe, devolver un error
+                
+            // si el ensamble no existe, devolver un error
             if (ensamble == null)
             {
                 return BadRequest($"El ensamble con ID {createDto.IdEnsamble} no existe.");
             }
+           
+            // dividir la cadena de propiedades en un arreglo usando la coma como separador
+            var propiedadesArray = createDto.Propiedad
+                .Split(',') // divide la cadena por comas
+                .Select(p => p.Trim()) // elimina espacios en blanco de cada propiedad
+                .Where(p => !string.IsNullOrEmpty(p)) // filtra propiedades vacías
+                .ToList();
 
-            // Crear una lista para almacenar las propiedades que se van a crear
+            // crear una lista para almacenar las propiedades que se van a crear
             var propiedadesCreadas = new List<Propiedades>();
 
-            // Iterar sobre cada propiedad en la lista del DTO
-            foreach (var prop in createDto.Propiedades)
+            // iterar sobre cada propiedad en el arreglo
+            foreach (var prop in propiedadesArray)
             {
-                // Crear un nuevo objeto Propiedades para cada propiedad en la lista
+                // crear un nuevo objeto Propiedades para cada propiedad
                 var propiedad = new Propiedades
                 {
-                    Propiedad = prop.Trim(), // Asignar el valor de la propiedad (eliminando espacios en blanco)
-                    IdEnsamble = ensamble.Id // Asignar el ID del ensamble existente
+                    Propiedad = prop, // asignar el valor de la propiedad (ya se aplicó Trim)
+                    IdEnsamble = ensamble.Id // asignar el ID del ensamble existente
                 };
 
-                // Agregar la propiedad creada a la lista de propiedadesCreadas
+                // agregar la propiedad creada a la lista de propiedadesCreadas
                 propiedadesCreadas.Add(propiedad);
             }
 
-            // Agregar todas las propiedades creadas al contexto de la base de datos
+            // agregar todas las propiedades creadas al contexto de la base de datos
             _context.inv_propiedades.AddRange(propiedadesCreadas);
 
-            // Guardar los cambios en la base de datos
+            // guardar los cambios en la base de datos
             await _context.SaveChangesAsync();
 
-            // Retornar una respuesta exitosa con un mensaje y los datos creados
+            // retornar una respuesta exitosa con un mensaje y los datos creados
             return Ok(new
             {
-                Mensaje = "Propiedades registradas con éxito", // Mensaje de éxito
+                Mensaje = "Propiedades registradas con éxito", // mensaje de éxito
                 EnsambleId = ensamble.Id, // ID del ensamble al que se asociaron las propiedades
-                PropiedadesCreadas = propiedadesCreadas.Select(p => p.Propiedad).ToList() // Lista de propiedades creadas
+                PropiedadesCreadas = propiedadesCreadas.Select(p => p.Propiedad).ToList() // lista de propiedades creadas
             });
         }
 
