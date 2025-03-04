@@ -104,88 +104,90 @@ namespace Controlinventarios.Controllers
             return Ok(propiedadDto);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<Propiedades>> Post(PropiedadesCreateDto createDto)
-        {
-            // Mapeo DTO a entidad
-            var propiedad = _mapper.Map<Propiedades>(createDto);
+        //[HttpPost]
+        //public async Task<ActionResult<Propiedades>> Post(PropiedadesCreateDto createDto)
+        //{
+        //    // Mapeo DTO a entidad
+        //    var propiedad = _mapper.Map<Propiedades>(createDto);
 
-            // validar existencia del ensamble
-            var ensambleExiste = await _context.inv_ensamble
-                .FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
+        //    // validar existencia del ensamble
+        //    var ensambleExiste = await _context.inv_ensamble
+        //        .FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
 
-            if (ensambleExiste == null)
-            {
-                return BadRequest($"Ensamble con ID {createDto.IdEnsamble} no existe.");
-            }
+        //    if (ensambleExiste == null)
+        //    {
+        //        return BadRequest($"Ensamble con ID {createDto.IdEnsamble} no existe.");
+        //    }
 
-            // Persistir en base de datos
-            _context.inv_propiedades.Add(propiedad);
-            await _context.SaveChangesAsync();
+        //    // Persistir en base de datos
+        //    _context.inv_propiedades.Add(propiedad);
+        //    await _context.SaveChangesAsync();
 
-            // Retornar resultado
-            return CreatedAtAction(nameof(GetId), new { id = propiedad.id }, propiedad);
-        }
+        //    // Retornar resultado
+        //    return CreatedAtAction(nameof(GetId), new { id = propiedad.id }, propiedad);
+        //}
 
         [HttpPost("Recibir listado de propiedades")]
         public async Task<ActionResult> RecibirPropiedades(PropiedadesCreateDto createDto)
         {
-            // validar que el DTO no sea nulo y que la cadena de propiedades no este vacía
+            // Validar que el DTO no sea nulo y que la cadena de propiedades no esté vacía
             if (createDto == null || string.IsNullOrEmpty(createDto.Propiedad))
             {
                 return BadRequest("Debe ingresar al menos una propiedad.");
             }
 
-            // verificar si el ensamble existe en la base de datos
-            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
-                
-            // si el ensamble no existe, devolver un error
-            if (ensamble == null)
+            // Crear un nuevo ensamble con el serial del equipo
+            var ensamble = new Ensamble
             {
-                return BadRequest($"El ensamble con ID {createDto.IdEnsamble} no existe.");
-            }
-           
-            // dividir la cadena de propiedades en un arreglo usando la coma como separador
+                NumeroSerial = createDto.SerialEquipo // Asignar el serial del equipo
+            };
+
+            // Agregar el ensamble al contexto de la base de datos
+            _context.inv_ensamble.Add(ensamble);
+            await _context.SaveChangesAsync(); // Guardar para obtener el Id generado automáticamente
+
+            // Dividir la cadena de propiedades en un arreglo usando la coma como separador
             var propiedadesArray = createDto.Propiedad
-                .Split(',') // divide la cadena por comas
-                .Select(p => p.Trim()) // elimina espacios en blanco de cada propiedad
-                .Where(p => !string.IsNullOrEmpty(p)) // filtra propiedades vacías
+                .Split(',') // Divide la cadena por comas
+                .Select(p => p.Trim()) // Elimina espacios en blanco de cada propiedad
+                .Where(p => !string.IsNullOrEmpty(p)) // Filtra propiedades vacías
                 .ToList();
 
-            // crear una lista para almacenar las propiedades que se van a crear
+            // Crear una lista para almacenar las propiedades que se van a crear
             var propiedadesCreadas = new List<Propiedades>();
 
-            // iterar sobre cada propiedad en el arreglo
+            // Iterar sobre cada propiedad en el arreglo
             foreach (var prop in propiedadesArray)
             {
-                // crear un nuevo objeto Propiedades para cada propiedad
+                // Crear un nuevo objeto Propiedades para cada propiedad
                 var propiedad = new Propiedades
                 {
-                    Propiedad = prop, // asignar el valor de la propiedad (ya se aplicó Trim)
-                    IdEnsamble = ensamble.Id // asignar el ID del ensamble existente
+                    Propiedad = prop, // Asignar el valor de la propiedad (ya se aplicó Trim)
+                    IdEnsamble = ensamble.Id // Asignar el ID del ensamble recién creado
                 };
 
-                // agregar la propiedad creada a la lista de propiedadesCreadas
+                // Agregar la propiedad creada a la lista de propiedadesCreadas
                 propiedadesCreadas.Add(propiedad);
             }
 
-            // agregar todas las propiedades creadas al contexto de la base de datos
+            // Agregar todas las propiedades creadas al contexto de la base de datos
             _context.inv_propiedades.AddRange(propiedadesCreadas);
 
-            // guardar los cambios en la base de datos
+            // Guardar los cambios en la base de datos
             await _context.SaveChangesAsync();
 
-            // retornar una respuesta exitosa con un mensaje y los datos creados
+            // Retornar una respuesta exitosa con un mensaje y los datos creados
             return Ok(new
             {
-                Mensaje = "Propiedades registradas con éxito", // mensaje de éxito
-                EnsambleId = ensamble.Id, // ID del ensamble al que se asociaron las propiedades
-                PropiedadesCreadas = propiedadesCreadas.Select(p => p.Propiedad).ToList() // lista de propiedades creadas
+                Mensaje = "Propiedades registradas con éxito", // Mensaje de éxito
+                EnsambleId = ensamble.Id, // ID del ensamble recién creado
+                SerialEquipo = ensamble.NumeroSerial, // Serial del equipo
+                PropiedadesCreadas = propiedadesCreadas.Select(p => p.Propiedad).ToList() // Lista de propiedades creadas
             });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, PropiedadesCreateDto updateDto)
+        public async Task<ActionResult> Update(int id, PropiedadesUpdateDto updateDto)
         {
             // busca la propiedad en la base de datos usando el ID proporcionado en la ruta.
             var propiedad = await _context.inv_propiedades.FirstOrDefaultAsync(x => x.id == id);

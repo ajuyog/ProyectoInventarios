@@ -30,12 +30,14 @@ namespace Controlinventarios.Utilidad
 
             //Inicio mapeo Propiedades
             CreateMap<PropiedadesCreateDto, Propiedades>().ReverseMap();
+            CreateMap<PropiedadesUpdateDto, Propiedades>().ReverseMap();
             CreateMap<Propiedades, PropiedadesDto>().ReverseMap();
             //Fin mapeo Propiedades
 
             //Incio Mapeo Ensamble
             CreateMap<EnsambleCreateDto, Ensamble>().ReverseMap();
             CreateMap<Ensamble, EnsambleDto>().ReverseMap();
+            CreateMap<Ensamble, ListaEnsambleDto>().ReverseMap();
             CreateMap<Ensamble, EnsambleDto2>().ReverseMap();
             //Fin mapeo ensamble
 
@@ -44,6 +46,7 @@ namespace Controlinventarios.Utilidad
             CreateMap<AsignacionPatchDto, Asignacion>().ReverseMap();
             CreateMap<AsignacionUpdateDto, Asignacion>().ReverseMap();
             CreateMap<Asignacion, AsignacionDto>().ReverseMap();
+            CreateMap<Asignacion, ListaAsignacionDto>().ReverseMap();
             //Fin mapero asignacion
 
             //Inicio Mapeo FacturacionTMK

@@ -11,5 +11,6 @@ namespace Controlinventarios.Dto
         public string Numeroserial { get; set; }
         public DateOnly FechaRegistro { get; set; }
         public string Email { get; set; }
+        public List<EnsambleDto> EquiposAsignados { get; set; }
     }
 }

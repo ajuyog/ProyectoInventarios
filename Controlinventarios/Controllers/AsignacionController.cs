@@ -73,6 +73,45 @@ namespace Controlinventarios.Controllers
             return Ok(asignacionDtos);
         }
 
+        [HttpGet("Usuario con su lista de equipos")]
+        public async Task<ActionResult<List<ListaAsignacionDto>>> Get5()
+        {
+            // Obtener todos los usuarios con sus asignaciones y detalles de ensambles
+            var usuariosConEquipos = await (from ip in _context.inv_persona
+                                            join a in _context.aspnetusers on ip.userId equals a.Id
+                                            join ia in _context.inv_asignacion on a.Id equals ia.IdPersona
+                                            join ie in _context.inv_ensamble on ia.IdEnsamble equals ie.Id
+                                            join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
+                                            select new ListaAsignacionDto
+                                            {
+                                                IdPersona = a.Id,
+                                                ApellidoPersona = ip.Nombres,
+                                                NombrePersona = ip.Apellidos,
+                                                Email = a.Email,
+                                                EquiposAsignados = (from ia2 in _context.inv_asignacion
+                                                             join ie3 in _context.inv_ensamble on ia2.IdEnsamble equals ie3.Id
+                                                             join im in _context.inv_marca on ie3.IdMarca equals im.id
+                                                             join ie4 in _context.inv_elementType on ie3.IdElementType equals ie4.id
+                                                             where ia2.IdPersona == a.Id
+                                                             select new ListaEnsambleDto
+                                                             {
+                                                                 Id = ie3.Id,
+                                                                 NumeroSerial = ie3.NumeroSerial,
+                                                                 Estado = ie3.Estado,
+                                                                 Renting = ie3.Renting,
+                                                                 TipoElemento = ie4.Nombre,
+                                                                 NombreMarca = im.Nombre,
+                                                                 FechaRegistroEquipo = ia2.FechaRegistro
+                                                             }).ToList()
+                                            }).ToListAsync();
+
+            if (usuariosConEquipos == null || !usuariosConEquipos.Any())
+            {
+                return BadRequest("No se encontraron usuarios con equipos asignados.");
+            }
+
+            return Ok(usuariosConEquipos);
+        }
 
         [HttpGet("Consulta linq")]
         public async Task<ActionResult<List<AsignacionDto>>> Get3()
@@ -99,23 +138,44 @@ namespace Controlinventarios.Controllers
         [HttpGet("Prueba")]
         public async Task<ActionResult<List<AsignacionDto>>> Get4()
         {
-            var resultado = await (from ia in _context.inv_asignacion
-                                   join a in _context.aspnetusers on ia.IdPersona equals a.Id
-                                   join ip in _context.inv_persona on a.Id equals ip.userId
-                                   select new AsignacionDto
-                                   {
-                                       Email = a.Email,
-                                       NombrePersona = ip.Nombres,
-                                       IdEnsamble = ia.IdEnsamble,
-                                       ApellidoPersona = ip.Apellidos,
-                                       FechaRegistro = ia.FechaRegistro,
-                                       IdPersona = ia.IdPersona
-                                   }).ToListAsync();
+            // Obtener todos los ensambles de la base de datos
+            var existeEnsamble = await _context.inv_ensamble.ToListAsync();
+            if (existeEnsamble == null)
+            {
+                return BadRequest("No existen ensambles");
+            }
 
-            if (resultado == null || !resultado.Any())
+            // Obtener los datos de la base de datos sin el Numeroserial
+            var datosAsignacion = await (from ia in _context.inv_asignacion
+                                         join a in _context.aspnetusers on ia.IdPersona equals a.Id
+                                         join ip in _context.inv_persona on a.Id equals ip.userId
+                                         select new
+                                         {
+                                             Email = a.Email,
+                                             NombrePersona = ip.Nombres,
+                                             IdEnsamble = ia.IdEnsamble,
+                                             ApellidoPersona = ip.Apellidos,
+                                             FechaRegistro = ia.FechaRegistro,
+                                             IdPersona = ia.IdPersona
+                                         }).ToListAsync();
+
+            // Verificar si se encontraron resultados
+            if (datosAsignacion == null || !datosAsignacion.Any())
             {
                 return BadRequest("No se encontraron elementos asignados.");
             }
+
+            // Combinar los datos con la lista existeEnsamble en memoria
+            var resultado = datosAsignacion.Select(datos => new AsignacionDto
+            {
+                Email = datos.Email,
+                NombrePersona = datos.NombrePersona,
+                IdEnsamble = datos.IdEnsamble,
+                ApellidoPersona = datos.ApellidoPersona,
+                Numeroserial = existeEnsamble.FirstOrDefault(ie => ie.Id == datos.IdEnsamble)?.NumeroSerial ?? "No disponible",
+                FechaRegistro = datos.FechaRegistro,
+                IdPersona = datos.IdPersona
+            }).ToList();
 
             return Ok(resultado);
         }
@@ -249,37 +309,6 @@ namespace Controlinventarios.Controllers
             return CreatedAtAction(nameof(GetId), new { idEnsamble = asignacion.IdEnsamble }, asignacion);
         }
 
-        //[HttpPut("{id}")]
-        //public async Task<ActionResult> Update(string id, Asignacion updateDto)
-        //{
-        //    var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == id);
-        //    if (persona == null)
-        //    {
-        //        return BadRequest($"No ecnontraron personas con el id: {id}");
-        //    }
-
-        //    var personExiste = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == persona.userId);
-        //    if (personExiste == null)
-        //    {
-        //        return BadRequest($"No existe una persona con el id:{persona.userId}");
-        //    }
-
-        //    //verificacion si existe el area
-        //    var areaExiste = await _context.inv_area.FirstOrDefaultAsync(x => x.id == updateDto.IdArea);
-        //    if (areaExiste == null)
-        //    {
-        //        return BadRequest($"El area con el ID {updateDto.IdArea} no fue encontrado.");
-        //    }
-
-        //    persona = _mapper.Map(updateDto, persona);
-
-        //    _context.inv_persona.Update(persona);
-        //    await _context.SaveChangesAsync();
-
-        //    return CreatedAtAction(nameof(GetId), new { persona.userId }, persona);
-
-        //}
-
         [HttpPut("{idEnsamble}")]
         public async Task<ActionResult> Update(int idEnsamble, AsignacionUpdateDto updateDto)
         {
@@ -299,50 +328,13 @@ namespace Controlinventarios.Controllers
             return CreatedAtAction(nameof(GetId), new { idEnsamble = ensambleExiste.IdEnsamble }, ensambleExiste);
         }
 
-        //[HttpPut("Prueba/{idEnsamble}")]
-        //public async Task<ActionResult> Update(int idEnsamble, AsignacionUpdateDto updateDto)
-        //{
-        //    // Verificar si la asignación existe
-        //    var asignacionExistente = await _context.inv_asignacion
-        //        .FirstOrDefaultAsync(x => x.IdEnsamble == idEnsamble);
-
-        //    if (asignacionExistente == null)
-        //    {
-        //        return BadRequest($"No se encontró la asignación con el id de ensamble: {idEnsamble}");
-        //    }
-
-        //    // Verificación de si la persona existe con el IdPersona
-        //    var persona = await _context.inv_persona
-        //        .FirstOrDefaultAsync(x => x.userId == updateDto.IdPersona);
-
-        //    if (persona == null)
-        //    {
-        //        return BadRequest($"No se encontró una persona con el Id: {updateDto.IdPersona}");
-        //    }
-
-        //    // Verificación del ensamble con el IdEnsamble
-        //    var ensamble = await _context.inv_ensamble
-        //        .FirstOrDefaultAsync(x => x.Id == updateDto.IdEnsamble);
-
-        //    if (ensamble == null)
-        //    {
-        //        return BadRequest($"No se encontró el ensamble con el Id: {updateDto.IdEnsamble}");
-        //    }
-
-        //    await _context.SaveChangesAsync(); // Guardar los cambios para insertar la nueva entidad
-
-        //    // Retornar la nueva asignación
-        //    return CreatedAtAction(nameof(GetId), new { updateDto.IdEnsamble }, asignacionExistente);
-        //}
-
-
+        
         [HttpPatch("CambiarAsignado/{EnsambleId}")]
         public async Task<ActionResult> Patch(int EnsambleId, AsignacionPatchDto patchDto)
         {
             // Verificar si el ensamble existe
-            var asignacionExistente = await _context.inv_asignacion
-                .FirstOrDefaultAsync(x => x.IdEnsamble == EnsambleId);
-
+            var asignacionExistente = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdEnsamble == EnsambleId);
+                
             if (asignacionExistente == null)
             {
                 return BadRequest($"El ensamble {EnsambleId} no existe");
