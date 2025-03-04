@@ -84,10 +84,12 @@ namespace Controlinventarios.Controllers
                                             join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
                                             select new ListaAsignacionDto
                                             {
+                                                //Obtener los datos de la tabla inv_persona
                                                 IdPersona = a.Id,
                                                 ApellidoPersona = ip.Nombres,
                                                 NombrePersona = ip.Apellidos,
                                                 Email = a.Email,
+                                                //Obtener los datos de la tabla inv_ensamble
                                                 EquiposAsignados = (from ia2 in _context.inv_asignacion
                                                              join ie3 in _context.inv_ensamble on ia2.IdEnsamble equals ie3.Id
                                                              join im in _context.inv_marca on ie3.IdMarca equals im.id
@@ -104,7 +106,7 @@ namespace Controlinventarios.Controllers
                                                                  FechaRegistroEquipo = ia2.FechaRegistro
                                                              }).ToList()
                                             }).ToListAsync();
-
+            // Verificar si se encontraron resultados
             if (usuariosConEquipos == null || !usuariosConEquipos.Any())
             {
                 return BadRequest("No se encontraron usuarios con equipos asignados.");
