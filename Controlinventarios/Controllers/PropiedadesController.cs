@@ -137,7 +137,7 @@ namespace Controlinventarios.Controllers
             }
 
             // verificar si el ensamble existe en la base de datos
-            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(e => e.Id == createDto.IdEnsamble);
+            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == createDto.IdEnsamble);
                 
             // si el ensamble no existe, devolver un error
             if (ensamble == null)
