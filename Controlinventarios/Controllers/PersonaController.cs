@@ -234,6 +234,56 @@ namespace Controlinventarios.Controllers
         }
 
 
+        [HttpGet("BusquedaPorId/{userId}")]
+        public async Task<ActionResult<PersonaDto>> GetById(string userId)
+        {
+            // Verifica si la persona existe
+            var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == userId);
+
+            if (persona == null)
+            {
+                return BadRequest($"No existe la identificacion: {userId}");
+            }
+
+            // Se verifica el area del usuario
+            var areaName = await _context.inv_area.FirstOrDefaultAsync(x => x.id == persona.IdArea);
+
+            if (areaName == null)
+            {
+                return BadRequest("El área no se encontró");
+            }
+
+            // Se verifica el nombre del usuario
+            var user = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == persona.userId);
+
+            if (user == null)
+            {
+                return BadRequest("El usuario no existe");
+            }
+
+            var nombreEmpresa = await _context.inv_empresa.FirstOrDefaultAsync(x => x.id == persona.idEmpresa);
+
+            if (nombreEmpresa == null)
+            {
+                return BadRequest($"No existe la empresa: {nombreEmpresa.Nombre}");
+            }
+
+            var personaDto = new PersonaDto
+            {
+                userId = persona.userId,
+                idEmpresa = nombreEmpresa.id,
+                IdArea = persona.IdArea,
+                identificacion = persona.identificacion,
+                Estado = persona.Estado,
+                UserName = user.UserName,
+                AreaName = areaName.Nombre,
+                NombreEmpresa = nombreEmpresa.Nombre,
+                Nombres = persona.Nombres,
+                Apellidos = persona.Apellidos
+            };
+
+            return Ok(personaDto);
+        }
 
 
         [HttpPost]

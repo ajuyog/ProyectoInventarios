@@ -3,7 +3,6 @@
     public class PropiedadesCreateDto
     {
         public string Propiedad { get; set; }
-        //public int IdEnsamble { get; set; }
-        public string SerialEquipo { get; set; }
+        public int IdEnsamble { get; set; }
     }
 }
