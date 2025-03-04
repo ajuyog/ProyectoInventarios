@@ -364,7 +364,7 @@ namespace Controlinventarios.Controllers
         public async Task<ActionResult> DeleteEnsamble(int id)
         {
             // Buscar el ensamble por su id
-            var ensamble = await _context.inv_ensamble.FindAsync(id);
+            var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == id);
 
             if (ensamble == null)
             {

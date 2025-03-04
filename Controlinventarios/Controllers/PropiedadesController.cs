@@ -218,7 +218,7 @@ namespace Controlinventarios.Controllers
         public async Task<ActionResult> Delete(int id)
         {
             // busca la propiedad en la base de datos usando el ID proporcionado en la ruta.
-            var propiedad = await _context.inv_propiedades.FindAsync(id);
+            var propiedad = await _context.inv_propiedades.FirstOrDefaultAsync(x => x.id == id);
 
             // verifica si la propiedad existe.
             if (propiedad == null)

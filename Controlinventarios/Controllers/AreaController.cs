@@ -93,7 +93,7 @@ namespace Controlinventarios.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var area = await _context.inv_area.FindAsync(id);
+            var area = await _context.inv_area.FirstOrDefaultAsync(x => x.id == id);
 
             if (area == null)
             {

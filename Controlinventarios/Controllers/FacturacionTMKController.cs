@@ -205,7 +205,7 @@ namespace Controlinventarios.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var facturacion = await _context.inv_facturaciontmk.FindAsync(id);
+            var facturacion = await _context.inv_facturaciontmk.FirstOrDefaultAsync(x => x.Id == id);
 
             if (facturacion == null)
             {

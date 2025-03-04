@@ -101,7 +101,7 @@ namespace Controlinventarios.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var elemento = await _context.inv_elementType.FindAsync(id);
+            var elemento = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == id);
 
             if (elemento == null)
             {

@@ -290,9 +290,9 @@ namespace Controlinventarios.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
+        public async Task<ActionResult> Delete(string id)
         {
-            var persona = await _context.inv_persona.FindAsync(id);
+            var persona = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == id);
 
             if (persona == null)
             {
