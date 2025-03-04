@@ -20,7 +20,7 @@ namespace Controlinventarios.Controllers
         }
 
 
-        [HttpGet("linq combinado")]
+        [HttpGet("LinqCombinado")]
         public async Task<ActionResult<List<CentroDeCostoDto>>> GetLinqCombinado()
         {
             // consulta para obtener los detalles del ensamble

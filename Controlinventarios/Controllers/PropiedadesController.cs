@@ -127,7 +127,7 @@ namespace Controlinventarios.Controllers
         //    return CreatedAtAction(nameof(GetId), new { id = propiedad.id }, propiedad);
         //}
 
-        [HttpPost("Recibir listado de propiedades")]
+        [HttpPost("RecibirListadoPropiedades")]
         public async Task<ActionResult> RecibirPropiedades(PropiedadesCreateDto createDto)
         {
             // validar que el DTO no sea nulo y que la cadena de propiedades no este vacía

@@ -72,7 +72,7 @@ namespace Controlinventarios.Controllers
             return Ok(facturacionDtos);
         }
 
-        [HttpGet("Objetos renting true")]
+        [HttpGet("ObjetosRentingTrue")]
         public async Task<ActionResult<List<EnsambleDto>>> GetTrue()
         {
             var facturacion = await _context.inv_ensamble.ToListAsync();

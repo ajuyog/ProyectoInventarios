@@ -73,7 +73,7 @@ namespace Controlinventarios.Controllers
             return Ok(asignacionDtos);
         }
 
-        [HttpGet("Usuario con su lista de equipos")]
+        [HttpGet("UsuarioConSuListaEquipos")]
         public async Task<ActionResult<List<ListaAsignacionDto>>> Get5()
         {
             // Obtener todos los usuarios con sus asignaciones y detalles de ensambles
@@ -115,7 +115,7 @@ namespace Controlinventarios.Controllers
             return Ok(usuariosConEquipos);
         }
 
-        [HttpGet("Consulta linq")]
+        [HttpGet("Consultalinq")]
         public async Task<ActionResult<List<AsignacionDto>>> Get3()
         {
             var query = from ia in _context.inv_asignacion

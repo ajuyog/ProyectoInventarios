@@ -124,7 +124,7 @@ namespace Controlinventarios.Controllers
         //    return Ok(result);
         //}
 
-        [HttpGet("Propiedades concatenadas")]
+        [HttpGet("PropiedadesConcatenadas")]
         public async Task<ActionResult<List<EnsambleDto2>>> GetPropiedadesConcatenadas()
         {
             // Conteo total de registros en la tabla inv_ensamble

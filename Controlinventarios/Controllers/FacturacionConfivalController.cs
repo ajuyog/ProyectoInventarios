@@ -23,7 +23,7 @@ namespace Controlinventarios.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("Objetos renting false")]
+        [HttpGet("ObjetosRentingFalse")]
         public async Task<ActionResult<List<EnsambleDto>>> Get()
         {
             var facturacion = await _context.inv_ensamble.ToListAsync();
