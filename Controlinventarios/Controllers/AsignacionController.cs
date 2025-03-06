@@ -115,112 +115,112 @@ namespace Controlinventarios.Controllers
             return Ok(usuariosConEquipos);
         }
 
-        [HttpGet("Consultalinq")]
-        public async Task<ActionResult<List<AsignacionDto>>> Get3()
-        {
-            var query = from ia in _context.inv_asignacion
-                        join ip in _context.inv_persona on ia.IdPersona equals ip.userId
-                        join a in _context.aspnetusers on ip.userId equals a.Id
-                        join ie in _context.inv_ensamble on ia.IdEnsamble equals ie.Id
-                        join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
-                        select new
-                        {
-                            Nombre = a.UserName,
-                            Serial = ie.NumeroSerial,
-                            Elemento = ie2.Nombre
-                        };
+        //[HttpGet("Consultalinq")]
+        //public async Task<ActionResult<List<AsignacionDto>>> Get3()
+        //{
+        //    var query = from ia in _context.inv_asignacion
+        //                join ip in _context.inv_persona on ia.IdPersona equals ip.userId
+        //                join a in _context.aspnetusers on ip.userId equals a.Id
+        //                join ie in _context.inv_ensamble on ia.IdEnsamble equals ie.Id
+        //                join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
+        //                select new
+        //                {
+        //                    Nombre = a.UserName,
+        //                    Serial = ie.NumeroSerial,
+        //                    Elemento = ie2.Nombre
+        //                };
 
-            var result = query.ToList();
+        //    var result = query.ToList();
 
-            // Devuelve los resultados en formato JSON
-            return Ok(result);
-        }
-
-
-        [HttpGet("Prueba")]
-        public async Task<ActionResult<List<AsignacionDto>>> Get4()
-        {
-            // Obtener todos los ensambles de la base de datos
-            var existeEnsamble = await _context.inv_ensamble.ToListAsync();
-            if (existeEnsamble == null)
-            {
-                return BadRequest("No existen ensambles");
-            }
-
-            // Obtener los datos de la base de datos sin el Numeroserial
-            var datosAsignacion = await (from ia in _context.inv_asignacion
-                                         join a in _context.aspnetusers on ia.IdPersona equals a.Id
-                                         join ip in _context.inv_persona on a.Id equals ip.userId
-                                         select new
-                                         {
-                                             Email = a.Email,
-                                             NombrePersona = ip.Nombres,
-                                             IdEnsamble = ia.IdEnsamble,
-                                             ApellidoPersona = ip.Apellidos,
-                                             FechaRegistro = ia.FechaRegistro,
-                                             IdPersona = ia.IdPersona
-                                         }).ToListAsync();
-
-            // Verificar si se encontraron resultados
-            if (datosAsignacion == null || !datosAsignacion.Any())
-            {
-                return BadRequest("No se encontraron elementos asignados.");
-            }
-
-            // Combinar los datos con la lista existeEnsamble en memoria
-            var resultado = datosAsignacion.Select(datos => new AsignacionDto
-            {
-                Email = datos.Email,
-                NombrePersona = datos.NombrePersona,
-                IdEnsamble = datos.IdEnsamble,
-                ApellidoPersona = datos.ApellidoPersona,
-                Numeroserial = existeEnsamble.FirstOrDefault(ie => ie.Id == datos.IdEnsamble)?.NumeroSerial ?? "No disponible",
-                FechaRegistro = datos.FechaRegistro,
-                IdPersona = datos.IdPersona
-            }).ToList();
-
-            return Ok(resultado);
-        }
+        //    // Devuelve los resultados en formato JSON
+        //    return Ok(result);
+        //}
 
 
-        [HttpGet("ConsultaLinq/{NumeroSerial}")]
-        public async Task<ActionResult<AsignacionDto>> GetById(string NumeroSerial)
-        {
-            // Busca el ensamble que contenga el número de serial (coincidencia parcial)
-            var ensambles = await _context.inv_ensamble
-                .Where(x => x.NumeroSerial.Contains(NumeroSerial))
-                .ToListAsync();
+        //[HttpGet("Prueba")]
+        //public async Task<ActionResult<List<AsignacionDto>>> Get4()
+        //{
+        //    // Obtener todos los ensambles de la base de datos
+        //    var existeEnsamble = await _context.inv_ensamble.ToListAsync();
+        //    if (existeEnsamble == null)
+        //    {
+        //        return BadRequest("No existen ensambles");
+        //    }
 
-            if (ensambles == null || !ensambles.Any())
-            {
-                return BadRequest($"No se encontró ningún ensamble con el serial: {NumeroSerial}");
-            }
+        //    // Obtener los datos de la base de datos sin el Numeroserial
+        //    var datosAsignacion = await (from ia in _context.inv_asignacion
+        //                                 join a in _context.aspnetusers on ia.IdPersona equals a.Id
+        //                                 join ip in _context.inv_persona on a.Id equals ip.userId
+        //                                 select new
+        //                                 {
+        //                                     Email = a.Email,
+        //                                     NombrePersona = ip.Nombres,
+        //                                     IdEnsamble = ia.IdEnsamble,
+        //                                     ApellidoPersona = ip.Apellidos,
+        //                                     FechaRegistro = ia.FechaRegistro,
+        //                                     IdPersona = ia.IdPersona
+        //                                 }).ToListAsync();
 
-            // Consulta LINQ para obtener los detalles asociados a las asignaciones de todos los ensambles encontrados
-            var query = from ia in _context.inv_asignacion
-                        join ip in _context.inv_persona on ia.IdPersona equals ip.userId
-                        join a in _context.aspnetusers on ip.userId equals a.Id
-                        join ie in _context.inv_ensamble on ia.IdEnsamble equals ie.Id
-                        join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
-                        where ie.NumeroSerial.Contains(NumeroSerial)  // Filtro por coincidencia parcial en NumeroSerial
-                        select new AsignacionDto
-                        {
-                            IdEnsamble = ia.IdEnsamble,
-                            IdPersona = ia.IdPersona,
-                            NombrePersona = a.UserName,
-                            Numeroserial = ie.NumeroSerial,
-                            FechaRegistro = ia.FechaRegistro
-                        };
+        //    // Verificar si se encontraron resultados
+        //    if (datosAsignacion == null || !datosAsignacion.Any())
+        //    {
+        //        return BadRequest("No se encontraron elementos asignados.");
+        //    }
 
-            var result = await query.ToListAsync(); // Recupera todos los resultados que coinciden    
+        //    // Combinar los datos con la lista existeEnsamble en memoria
+        //    var resultado = datosAsignacion.Select(datos => new AsignacionDto
+        //    {
+        //        Email = datos.Email,
+        //        NombrePersona = datos.NombrePersona,
+        //        IdEnsamble = datos.IdEnsamble,
+        //        ApellidoPersona = datos.ApellidoPersona,
+        //        Numeroserial = existeEnsamble.FirstOrDefault(ie => ie.Id == datos.IdEnsamble)?.NumeroSerial ?? "No disponible",
+        //        FechaRegistro = datos.FechaRegistro,
+        //        IdPersona = datos.IdPersona
+        //    }).ToList();
 
-            if (result == null || !result.Any())
-            {
-                return BadRequest($"No se encontró ningún resultado para el serial: {NumeroSerial}");
-            }
+        //    return Ok(resultado);
+        //}
 
-            return Ok(result); // Devuelve la lista con todos los resultados encontrados
-        }
+
+        //[HttpGet("ConsultaLinq/{NumeroSerial}")]
+        //public async Task<ActionResult<AsignacionDto>> GetById(string NumeroSerial)
+        //{
+        //    // Busca el ensamble que contenga el número de serial (coincidencia parcial)
+        //    var ensambles = await _context.inv_ensamble
+        //        .Where(x => x.NumeroSerial.Contains(NumeroSerial))
+        //        .ToListAsync();
+
+        //    if (ensambles == null || !ensambles.Any())
+        //    {
+        //        return BadRequest($"No se encontró ningún ensamble con el serial: {NumeroSerial}");
+        //    }
+
+        //    // Consulta LINQ para obtener los detalles asociados a las asignaciones de todos los ensambles encontrados
+        //    var query = from ia in _context.inv_asignacion
+        //                join ip in _context.inv_persona on ia.IdPersona equals ip.userId
+        //                join a in _context.aspnetusers on ip.userId equals a.Id
+        //                join ie in _context.inv_ensamble on ia.IdEnsamble equals ie.Id
+        //                join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
+        //                where ie.NumeroSerial.Contains(NumeroSerial)  // Filtro por coincidencia parcial en NumeroSerial
+        //                select new AsignacionDto
+        //                {
+        //                    IdEnsamble = ia.IdEnsamble,
+        //                    IdPersona = ia.IdPersona,
+        //                    NombrePersona = a.UserName,
+        //                    Numeroserial = ie.NumeroSerial,
+        //                    FechaRegistro = ia.FechaRegistro
+        //                };
+
+        //    var result = await query.ToListAsync(); // Recupera todos los resultados que coinciden    
+
+        //    if (result == null || !result.Any())
+        //    {
+        //        return BadRequest($"No se encontró ningún resultado para el serial: {NumeroSerial}");
+        //    }
+
+        //    return Ok(result); // Devuelve la lista con todos los resultados encontrados
+        //}
 
 
         [HttpGet("{idEnsamble}")]
@@ -331,34 +331,34 @@ namespace Controlinventarios.Controllers
         }
 
         
-        [HttpPatch("CambiarAsignado/{EnsambleId}")]
-        public async Task<ActionResult> Patch(int EnsambleId, AsignacionPatchDto patchDto)
-        {
-            // Verificar si el ensamble existe
-            var asignacionExistente = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdEnsamble == EnsambleId);
+        //[HttpPatch("CambiarAsignado/{EnsambleId}")]
+        //public async Task<ActionResult> Patch(int EnsambleId, AsignacionPatchDto patchDto)
+        //{
+        //    // Verificar si el ensamble existe
+        //    var asignacionExistente = await _context.inv_asignacion.FirstOrDefaultAsync(x => x.IdEnsamble == EnsambleId);
                 
-            if (asignacionExistente == null)
-            {
-                return BadRequest($"El ensamble {EnsambleId} no existe");
-            }
+        //    if (asignacionExistente == null)
+        //    {
+        //        return BadRequest($"El ensamble {EnsambleId} no existe");
+        //    }
 
-            // Verificar si el nuevo usuario asignado existe
-            var usuarioExiste = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == patchDto.IdPersona);
+        //    // Verificar si el nuevo usuario asignado existe
+        //    var usuarioExiste = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == patchDto.IdPersona);
                 
-            if (usuarioExiste == null)
-            {
-                return BadRequest($"No existe el usuario: {patchDto.IdPersona}");
-            }
+        //    if (usuarioExiste == null)
+        //    {
+        //        return BadRequest($"No existe el usuario: {patchDto.IdPersona}");
+        //    }
 
-            // Actualizar solo la propiedad IdPersona
-            asignacionExistente.IdPersona = patchDto.IdPersona;
+        //    // Actualizar solo la propiedad IdPersona
+        //    asignacionExistente.IdPersona = patchDto.IdPersona;
 
-            // Guardar los cambios en la base de datos
-            await _context.SaveChangesAsync();
+        //    // Guardar los cambios en la base de datos
+        //    await _context.SaveChangesAsync();
 
-            // Retornar la respuesta con CreatedAtAction
-            return CreatedAtAction(nameof(GetId), new { idEnsamble = asignacionExistente.IdEnsamble }, asignacionExistente);
-        }
+        //    // Retornar la respuesta con CreatedAtAction
+        //    return CreatedAtAction(nameof(GetId), new { idEnsamble = asignacionExistente.IdEnsamble }, asignacionExistente);
+        //}
 
 
         [HttpDelete("{IdEnsamble}")]

@@ -86,15 +86,46 @@ namespace Controlinventarios.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Ensamble>> GetId(int id)
+        public async Task<ActionResult<EnsambleDto>> GetId(int id)
         {
+            // Buscar el ensamble por su ID
             var ensamble = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == id);
             if (ensamble == null)
             {
-                return BadRequest($"No sencontraron ensambles con el id {id}");
+                return BadRequest($"No se encontraron ensambles con el id {id}");
             }
 
-            return Ok(ensamble);
+            // Obtener el tipo de elemento relacionado
+            var elementype = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == ensamble.IdElementType);
+            if (elementype == null)
+            {
+                return BadRequest("No se encontró el tipo de elemento asociado al ensamble.");
+            }
+
+            // Obtener la marca relacionada
+            var marca = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == ensamble.IdMarca);
+            if (marca == null)
+            {
+                return BadRequest("No se encontró la marca asociada al ensamble.");
+            }
+
+            // Mapear el ensamble a EnsambleDto
+            var ensambleDto = new EnsambleDto
+            {
+                Id = ensamble.Id,
+                IdElementType = ensamble.IdElementType,
+                IdMarca = ensamble.IdMarca,
+                NumeroSerial = ensamble.NumeroSerial,
+                Estado = ensamble.Estado,
+                Descripcion = ensamble.Descripcion,
+                Renting = ensamble.Renting,
+                TipoElemento = elementype.Nombre, // Nombre del tipo de elemento
+                NombreMarca = marca.Nombre, // Nombre de la marca
+                FechaRegistroEquipo = ensamble.FechaRegistroEquipo
+            };
+
+            // Devolver el DTO
+            return Ok(ensambleDto);
         }
 
         //[HttpGet("Propiedades concatenadas")]
@@ -235,7 +266,7 @@ namespace Controlinventarios.Controllers
             // retorna lo guardar
             return CreatedAtAction(nameof(GetId), new { id = ensamble.Id }, ensamble);
         }
-        
+
         [HttpPost("AsignacionAuto")]
         public async Task<ActionResult> Post2(EnsambleCreateDto createDto)
         {
@@ -265,60 +296,43 @@ namespace Controlinventarios.Controllers
             // Guarda los datos en la base de datos
             await _context.SaveChangesAsync();
 
-            // Obtener usuarios del área de TI
-            var usuariosAreaTI = await _context.inv_persona
-                .Where(x => x.IdArea == 1) // Filtra por el área de TI (ajusta el campo según tu modelo)
-                .ToListAsync();
+            // ID del usuario específico al que siempre se asignará el ensamble
+            var userIdEspecifico = "1bc91797-3b00-4fa4-b086-8b64927e0732";
 
-            if (usuariosAreaTI.Count == 0)
+            // Verificación del usuario específico
+            var usuarioExiste = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == userIdEspecifico);
+            if (usuarioExiste == null)
             {
-                return BadRequest("No se encontraron usuarios en el área de TI para asignar.");
+                return BadRequest($"La persona con el ID {userIdEspecifico} no fue encontrada.");
             }
 
-            // Seleccionar una cantidad específica de usuarios al azar (por ejemplo, 3)
-            int cantidadUsuariosAsignar = 1; // Puedes ajustar este número según tus necesidades
-            var usuariosSeleccionados = usuariosAreaTI
-                .OrderBy(x => Guid.NewGuid()) // Ordenar aleatoriamente
-                .Take(cantidadUsuariosAsignar) // Seleccionar la cantidad específica de usuarios
-                .ToList();
-
-            // Crear una asignación para cada usuario seleccionado
-            foreach (var usuario in usuariosSeleccionados)
+            var usuarioAsp = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == usuarioExiste.userId);
+            if (usuarioAsp == null)
             {
-                var asignacionCreateDto = new AsignacionCreateDto
-                {
-                    IdPersona = usuario.userId, // Asignar al usuario seleccionado
-                    IdEnsamble = ensamble.Id,
-                    // Otros campos necesarios para la asignación
-                };
-
-                var asignacion = _mapper.Map<Asignacion>(asignacionCreateDto);
-
-                // Verificación del id de usuario
-                var usuarioExiste = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == asignacionCreateDto.IdPersona);
-                if (usuarioExiste == null)
-                {
-                    return BadRequest($"La persona con el ID {asignacionCreateDto.IdPersona} no fue encontrada.");
-                }
-
-                var usuarioAsp = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == usuarioExiste.userId);
-                if (usuarioAsp == null)
-                {
-                    return BadRequest("No se encontraron usuarios");
-                }
-
-                // Verificación del id Ensamble
-                var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == asignacionCreateDto.IdEnsamble);
-                if (ensambleExiste == null)
-                {
-                    return BadRequest($"El ensamble con ID {asignacionCreateDto.IdEnsamble} no fue encontrado.");
-                }
-
-                asignacion.FechaRegistro = DateOnly.FromDateTime(DateTime.Now);
-
-                // Añade la entidad al contexto
-                _context.inv_asignacion.Add(asignacion);
+                return BadRequest("No se encontraron usuarios");
             }
+
+            // Crear la asignación para el usuario específico
+            var asignacionCreateDto = new AsignacionCreateDto
+            {
+                IdPersona = userIdEspecifico, // Asignar al usuario específico
+                IdEnsamble = ensamble.Id,
+                // Otros campos necesarios para la asignación
+            };
+
+            var asignacion = _mapper.Map<Asignacion>(asignacionCreateDto);
+
+            // Verificación del id Ensamble
+            var ensambleExiste = await _context.inv_ensamble.FirstOrDefaultAsync(x => x.Id == asignacionCreateDto.IdEnsamble);
+            if (ensambleExiste == null)
+            {
+                return BadRequest($"El ensamble con ID {asignacionCreateDto.IdEnsamble} no fue encontrado.");
+            }
+
+            asignacion.FechaRegistro = DateOnly.FromDateTime(DateTime.Now);
+
+            // Añade la entidad al contexto
+            _context.inv_asignacion.Add(asignacion);
 
             // Guardar los datos en la base de datos
             await _context.SaveChangesAsync();
