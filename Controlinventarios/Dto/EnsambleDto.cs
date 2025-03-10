@@ -13,5 +13,6 @@
         public string NombreMarca { get; set; }
         public string PropiedadesConcatenadas { get; set; }
         public DateOnly FechaRegistroEquipo { get; set; }
+        public DateOnly FechaFinContrato { get; set; }
     }
 }

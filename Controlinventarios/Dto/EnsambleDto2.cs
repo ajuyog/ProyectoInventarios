@@ -5,5 +5,6 @@
         public int id { get; set; }
         public string NumeroSerial { get; set; }
         public string PropiedadesConcatenadas { get; set; }
+        public DateOnly FechaFinContrato { get; set; }
     }
 }

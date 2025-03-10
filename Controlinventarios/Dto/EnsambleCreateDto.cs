@@ -15,5 +15,7 @@
         public bool Renting { get; set; }
 
         public DateOnly FechaRegistroEquipo { get; set; }
+
+        public DateOnly FechaFinContrato { get; set; }
     }
 }
