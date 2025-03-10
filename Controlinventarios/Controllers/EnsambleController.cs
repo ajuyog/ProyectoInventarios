@@ -317,6 +317,7 @@ namespace Controlinventarios.Controllers
             {
                 IdPersona = userIdEspecifico, // Asignar al usuario específico
                 IdEnsamble = ensamble.Id,
+                
                 // Otros campos necesarios para la asignación
             };
 
