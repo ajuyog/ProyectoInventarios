@@ -167,43 +167,48 @@ namespace Controlinventarios.Controllers
 
 
 
-        [HttpGet("{idPersona}")]
-        public async Task<ActionResult<List<ListaAsignacionDto>>> GetId(string idPersona)
+        [HttpGet("{Idpersona}")]
+        public async Task<ActionResult<List<ListaAsignacionDto>>> GetId(string Idpersona) // Recibir el parámetro
         {
-            var usuariosConEquipos = await (from ip in _context.inv_persona
-                                            join a in _context.aspnetusers on ip.userId equals a.Id
-                                            join ia in _context.inv_area on ip.IdArea equals ia.id
-                                            join ie in _context.inv_empresa on ip.idEmpresa equals ie.id
-                                            join ia2 in _context.inv_asignacion on a.Id equals ia2.IdPersona
-                                            join ieq in _context.inv_ensamble on ia2.IdEnsamble equals ieq.Id
-                                            join im in _context.inv_marca on ieq.IdMarca equals im.id
-                                            join ie4 in _context.inv_elementType on ieq.IdElementType equals ie4.id
-                                            where a.Id == idPersona
-                                            select new ListaAsignacionDto
-                                            {
-                                                IdPersona = a.Id,
-                                                ApellidoPersona = ip.Nombres,
-                                                NombrePersona = ip.Apellidos,
-                                                CCPersonas = ip.identificacion,
-                                                AreaPersona = ia.Nombre,
-                                                EmpresaPersona = ie.Nombre,
-                                                Email = a.Email,
-                                                CantidadEquiposAsignados = 1, // Cada fila representa un equipo asignado
-                                                IdEquipo = ieq.Id,
-                                                NumeroSerial = ieq.NumeroSerial,
-                                                Estado = ieq.Estado,
-                                                Renting = ieq.Renting,
-                                                TipoElemento = ie4.Nombre,
-                                                NombreMarca = im.Nombre,
-                                                FechaRegistroEquipo = ia2.FechaRegistro
-                                            }).ToListAsync();
+            var usuariosConEquipos = await _context.inv_persona
+                .Join(_context.aspnetusers, ip => ip.userId, a => a.Id, (ip, a) => new { ip, a })
+                .Join(_context.inv_area, ia2 => ia2.ip.IdArea, ia => ia.id, (temp, ia) => new { temp.ip, temp.a, ia })
+                .Join(_context.inv_empresa, ie => ie.ip.idEmpresa, ie => ie.id, (temp, ie) => new { temp.ip, temp.a, temp.ia, ie })
+                .GroupJoin(_context.inv_asignacion, ua => ua.a.Id, ia => ia.IdPersona, (ua, asignaciones) => new { ua, asignaciones })
+                .Where(result => result.asignaciones.Any() && result.ua.a.Id == Idpersona) // Filtrar por IDPersona
+                .ToListAsync();
 
             if (!usuariosConEquipos.Any())
             {
-                return BadRequest($"No se encontraron asignaciones para la persona con ID: {idPersona}");
+                return NotFound($"No se encontraron asignaciones para el usuario con ID: {Idpersona}");
             }
 
-            return Ok(usuariosConEquipos); // Devolver la lista plana con un objeto por equipo asignado
+            var listaUsuarios = usuariosConEquipos.Select(result => new ListaAsignacionDto
+            {
+                IdPersona = result.ua.a.Id,
+                ApellidoPersona = result.ua.ip.Nombres,
+                NombrePersona = result.ua.ip.Apellidos,
+                CCPersonas = result.ua.ip.identificacion,
+                AreaPersona = result.ua.ia.Nombre,
+                EmpresaPersona = result.ua.ie.Nombre,
+                Email = result.ua.a.Email,
+                CantidadEquiposAsignados = result.asignaciones.Count(),
+                EquiposAsignados = result.asignaciones
+                    .Join(_context.inv_ensamble, ia => ia.IdEnsamble, ie => ie.Id, (ia, ie) => new { ia, ie })
+                    .Join(_context.inv_marca, ieResult => ieResult.ie.IdMarca, im => im.id, (ieResult, im) => new { ieResult, im })
+                    .Join(_context.inv_elementType, ieResult => ieResult.ieResult.ie.IdElementType, ie4 => ie4.id, (ieResult, ie4) => new ListaEnsambleDto
+                    {
+                        Id = ieResult.ieResult.ie.Id,
+                        NumeroSerial = ieResult.ieResult.ie.NumeroSerial,
+                        Estado = ieResult.ieResult.ie.Estado,
+                        Renting = ieResult.ieResult.ie.Renting,
+                        TipoElemento = ie4.Nombre,
+                        NombreMarca = ieResult.im.Nombre,
+                        FechaRegistroEquipo = ieResult.ieResult.ia.FechaRegistro
+                    }).ToList()
+            }).ToList();
+
+            return Ok(listaUsuarios);
         }
 
 
