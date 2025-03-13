@@ -23,20 +23,19 @@ namespace Controlinventarios.Controllers
         [HttpGet("LinqCombinado")]
         public async Task<ActionResult<List<CentroDeCostoDto>>> GetLinqCombinado()
         {
-            // consulta para obtener los detalles del ensamble
+            // Consulta corregida para linqValorEquipo
             var linqValorEquipo = from ie in _context.inv_ensamble
                                   join ie2 in _context.inv_elementType on ie.IdElementType equals ie2.id
                                   join ia in _context.inv_asignacion on ie.Id equals ia.IdEnsamble
                                   join ip in _context.inv_persona on ia.IdPersona equals ip.userId
                                   join ia2 in _context.inv_area on ip.IdArea equals ia2.id
                                   join ie3 in _context.inv_empresa on ip.idEmpresa equals ie3.id
-                                  join if2 in _context.inv_facturaciontmk on ie.Id equals if2.Id
+                                  join if2 in _context.inv_facturaciontmk on ie.Id equals if2.IdEnsamble
                                   join im in _context.inv_marca on ie.IdMarca equals im.id
                                   where ie.Renting == true
                                   group new { ie2, im, ie, ia2, ie3, if2 } by new
                                   {
-                                      ia2.id,
-                                      //im.NombreMarca,// Revisar del por que me pone que no existe la columna
+                                      ie.Id,
                                       ie.NumeroSerial,
                                       ie.Renting,
                                       ia2.Nombre,
@@ -44,16 +43,16 @@ namespace Controlinventarios.Controllers
                                       if2.VlrNeto,
                                       if2.Descripcion,
                                   } into g
+                                  orderby g.Key.Id ascending // Ordenar por Id ascendente aquí
                                   select new
                                   {
-                                      g.Key.id,                            ////// nombre del tipo de elemento
-                                      //NombreMarca = g.Key.NombreMarca,
-                                      g.Key.NumeroSerial,                ////// numero de serie
-                                      g.Key.Renting,                    ////// renting
-                                      Area = g.Key.Nombre,             ////// nombre del area
-                                      Empresa = g.Key.idEmpresa,      ////// nombre de la empresa
-                                      VlrNeto = g.Key.VlrNeto,       ////// valor neto
-                                      Factura = g.Key.Descripcion,  ////// descripcion de la factura
+                                      g.Key.Id,
+                                      g.Key.NumeroSerial,
+                                      g.Key.Renting,
+                                      Area = g.Key.Nombre,
+                                      Empresa = g.Key.idEmpresa,
+                                      VlrNeto = g.Key.VlrNeto,
+                                      Factura = g.Key.Descripcion,
                                   };
             if (linqValorEquipo == null)
             {
@@ -103,9 +102,9 @@ namespace Controlinventarios.Controllers
                     TotalVlrNeto = totalPorTodasLasAreas.TotalVlrNeto,
                     totalEquipos = totalPorTodasLasAreas.TotalEquipos,
                     TotalIva = totalPorTodasLasAreas.TotalVlrNeto * 19 / 100,
-                    Retencion = totalPorTodasLasAreas.TotalVlrNeto * 35 / 1000,
+                    Retencion = totalPorTodasLasAreas.TotalVlrNeto * 40 / 1000,
                     Factura = "Total General", // descripcion general
-                    Total_A_Pagar = totalPorTodasLasAreas.TotalVlrNeto + (totalPorTodasLasAreas.TotalVlrNeto * 19 / 100) + (totalPorTodasLasAreas.TotalVlrNeto * 35 / 1000),
+                    Total_A_Pagar = totalPorTodasLasAreas.TotalVlrNeto + (totalPorTodasLasAreas.TotalVlrNeto * 19 / 100) - (totalPorTodasLasAreas.TotalVlrNeto * 40 / 1000),
                     Fecha = DateTime.Now
                 }
             };
