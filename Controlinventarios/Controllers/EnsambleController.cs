@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Controlinventarios.Dto;
 using Controlinventarios.Model;
+using Controlinventarios.Utildad;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -40,49 +41,81 @@ namespace Controlinventarios.Controllers
 
 
         [HttpGet]
-        public async Task<ActionResult<List<EnsambleDto>>> Get()
+        public async Task<ActionResult<object>> Get(string search, [FromQuery] PaginacionDTO paginacionDTO)
         {
-            var ensamble = await _context.inv_ensamble.ToListAsync();
-
-            if (ensamble == null)
+            if (!string.IsNullOrEmpty(search))
             {
-                return BadRequest("No existe ningun ensamble");
+                var ensambles2 = _context.inv_ensamble
+                .Join(_context.inv_elementType, ensamble => ensamble.IdElementType, elementType => elementType.id, (ensamble, elementType) => new
+                {
+                    ensamble,
+                    elementType
+                })
+                .Join(_context.inv_marca, ensambleElementType => ensambleElementType.ensamble.IdMarca, marca => marca.id, (ensambleElementType, marca) => new
+                {
+                    ensambleElementType.ensamble,
+                    ensambleElementType.elementType,
+                    marca
+                })
+                .Where(x => x.ensamble.NumeroSerial.Contains(search)
+                    || x.elementType.Nombre.Contains(search)
+                    || x.marca.Nombre.Contains(search))
+                .Select(x => new EnsambleDto
+                {
+                    Id = x.ensamble.Id,
+                    IdElementType = x.ensamble.IdElementType,
+                    IdMarca = x.ensamble.IdMarca,
+                    NumeroSerial = x.ensamble.NumeroSerial,
+                    Estado = x.ensamble.Estado,
+                    Descripcion = x.ensamble.Descripcion,
+                    Renting = x.ensamble.Renting,
+                    TipoElemento = x.elementType.Nombre ?? "Desconocido",
+                    NombreMarca = x.marca.Nombre ?? "Desconocida",
+                    FechaRegistroEquipo = x.ensamble.FechaRegistroEquipo
+                })
+                .OrderBy(e => e.Id).AsQueryable();
+
+                var ensambles = await ensambles2.Paginar(paginacionDTO).ToListAsync();
+                await HttpContext.InsertarParametrosPaginacionEnCabecera(ensambles2);
+                await HttpContext.TInsertarParametrosPaginacion(ensambles2, paginacionDTO.RegistrosPorPagina);
+                return Ok(ensambles);
             }
-
-            var EnsambleDtos = new List<EnsambleDto>();
-
-            foreach (var ensambles in ensamble)
+            else
             {
-                var elementype = await _context.inv_elementType.FirstOrDefaultAsync(x => x.id == ensambles.IdElementType);
-                if (elementype == null)
+                var ensambles3 = _context.inv_ensamble
+                .Join(_context.inv_elementType, ensamble => ensamble.IdElementType, elementType => elementType.id,
+                (ensamble, elementType) => new
                 {
-                    return BadRequest("No tiene ningun tipo de elemento");
-                }
-
-                var marca = await _context.inv_marca.FirstOrDefaultAsync(x => x.id == ensambles.IdMarca);
-                if (marca == null)
+                    ensamble,
+                    elementType
+                })
+                .Join(_context.inv_marca, ensambleElementType => ensambleElementType.ensamble.IdMarca, marca => marca.id,
+                (ensambleElementType, marca) => new
                 {
-                    return BadRequest("No se encontraron marcas");
-                }
-
-                var ensambleDto = new EnsambleDto
+                    ensambleElementType.ensamble,
+                    ensambleElementType.elementType,
+                    marca
+                })
+                .Select(x => new EnsambleDto
                 {
-                    Id = ensambles.Id,
-                    IdElementType = ensambles.IdElementType,
-                    IdMarca = ensambles.IdMarca,
-                    NumeroSerial = ensambles.NumeroSerial,
-                    Estado = ensambles.Estado,
-                    Descripcion = ensambles.Descripcion,
-                    Renting = ensambles.Renting,
-                    TipoElemento = elementype.Nombre,
-                    NombreMarca = marca.Nombre,
-                    FechaRegistroEquipo = ensambles.FechaRegistroEquipo
-                };
+                    Id = x.ensamble.Id,
+                    IdElementType = x.ensamble.IdElementType,
+                    IdMarca = x.ensamble.IdMarca,
+                    NumeroSerial = x.ensamble.NumeroSerial,
+                    Estado = x.ensamble.Estado,
+                    Descripcion = x.ensamble.Descripcion,
+                    Renting = x.ensamble.Renting,
+                    TipoElemento = x.elementType.Nombre ?? "Desconocido",
+                    NombreMarca = x.marca.Nombre ?? "Desconocida",
+                    FechaRegistroEquipo = x.ensamble.FechaRegistroEquipo
+                })
+                .OrderBy(e => e.Id).AsQueryable();
 
-                EnsambleDtos.Add(ensambleDto);
+                var ensambles = await ensambles3.Paginar(paginacionDTO).ToListAsync();
+                await HttpContext.InsertarParametrosPaginacionEnCabecera(ensambles3);
+                await HttpContext.TInsertarParametrosPaginacion(ensambles3, paginacionDTO.RegistrosPorPagina);
+                return Ok(ensambles);
             }
-
-            return Ok(EnsambleDtos);
         }
 
         [HttpGet("{id}")]

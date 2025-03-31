@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Controlinventarios.Dto;
 using Controlinventarios.Model;
+using Controlinventarios.Utildad;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Algorithm;
@@ -29,55 +30,91 @@ namespace Controlinventarios.Controllers
 
 
         [HttpGet]
-        public async Task<ActionResult<List<PersonaDto>>> Get()
+        public async Task<ActionResult<object>> Get(string searchUsuarios, [FromQuery] PaginacionDTO paginacionDTO)
         {
-            var personas = await _context.inv_persona.OrderByDescending(x => x.userId).ToListAsync();
-
-            if (personas == null)
+            if (!string.IsNullOrEmpty(searchUsuarios))
             {
-                return BadRequest("No se encontraron registros de personas.");
+                var personasConfi = _context.inv_persona
+                .Join(_context.inv_area, persona => persona.IdArea, idarea => idarea.id, (persona, idarea) => new
+                {
+                    persona,
+                    idarea
+                })
+                .Join(_context.inv_empresa, persona => persona.persona.idEmpresa, empresa => empresa.id, (persona, empresa) => new
+                {
+                    persona,
+                    empresa
+                })
+                .Join(_context.aspnetusers, userName => userName.persona.persona.userId, user => user.Id, (userName, user) => new
+                {
+                    userName.persona,
+                    userName.persona.idarea,
+                    userName.empresa,
+                    user
+                })
+                .Where(x => x.user.UserName.Contains(searchUsuarios)
+                    || x.idarea.Nombre.Contains(searchUsuarios)
+                    || x.empresa.Nombre.Contains(searchUsuarios))
+                .Select(x => new PersonaDto
+                {
+                    UserId = x.user.Id,
+                    IdArea = x.persona.persona.IdArea,
+                    Identificacion = x.persona.persona.identificacion,
+                    Estado = x.persona.persona.Estado,
+                    IdEmpresa = x.persona.persona.idEmpresa,
+                    UserName = x.user.UserName,
+                    AreaName = x.idarea.Nombre ?? "No tiene area",
+                    NombreEmpresa = x.empresa.Nombre ?? "No tiene empresa",
+                    Nombres = x.persona.persona.Nombres,
+                    Apellidos = x.persona.persona.Apellidos
+                })
+                .OrderBy(e => e.UserId).AsQueryable();
+
+                var personas = await personasConfi.Paginar(paginacionDTO).ToListAsync();
+                await HttpContext.InsertarParametrosPaginacionEnCabecera(personasConfi);
+                await HttpContext.TInsertarParametrosPaginacion(personasConfi, paginacionDTO.RegistrosPorPagina);
+                return Ok(personas);
             }
-
-            var personaDtos = new List<PersonaDto>();
-
-            foreach (var persona in personas)
+            else
             {
-                var areaName = await _context.inv_area.FirstOrDefaultAsync(x => x.id == persona.IdArea);
-                if (areaName == null)
+                var usuariosConfival = _context.inv_persona
+               .Join(_context.inv_area, persona => persona.IdArea, idarea => idarea.id, (persona, idarea) => new
+               {
+                   persona,
+                   idarea
+               })
+                .Join(_context.inv_empresa, persona => persona.persona.idEmpresa, empresa => empresa.id, (persona, empresa) => new
                 {
-                    return BadRequest("El area no se encontro");
-                }
-
-                var user = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == persona.userId);
-                if (user == null)
+                    persona,
+                    empresa
+                })
+                .Join(_context.aspnetusers, userName => userName.persona.persona.userId, user => user.Id, (userName, user) => new
                 {
-                    return BadRequest("El usuario no existe");
-                }
+                    userName.persona,
+                    userName.persona.idarea,
+                    userName.empresa,
+                    user
+                })
+                 .Select(x => new PersonaDto
+                 {
+                     UserId = x.user.Id,
+                     IdArea = x.persona.persona.IdArea,
+                     Identificacion = x.persona.persona.identificacion,
+                     Estado = x.persona.persona.Estado,
+                     IdEmpresa = x.persona.persona.idEmpresa,
+                     UserName = x.user.UserName,
+                     AreaName = x.idarea.Nombre ?? "No tiene area",
+                     NombreEmpresa = x.empresa.Nombre ?? "No tiene empresa",
+                     Nombres = x.persona.persona.Nombres,
+                     Apellidos = x.persona.persona.Apellidos
+                 })
+                .OrderBy(e => e.UserId).AsQueryable();
 
-                var nombreEmpresa = await _context.inv_empresa.FirstOrDefaultAsync(x => x.id == persona.idEmpresa);
-                if (nombreEmpresa == null)
-                {
-                    return BadRequest("No se encontraron empresas");
-                }
-
-                var personaDto = new PersonaDto
-                {
-                    userId = persona.userId,
-                    IdArea = persona.IdArea,
-                    idEmpresa = nombreEmpresa.id,
-                    identificacion = persona.identificacion,
-                    Estado = persona.Estado,
-                    UserName = user.UserName,
-                    AreaName = areaName.Nombre,
-                    NombreEmpresa = nombreEmpresa.Nombre,
-                    Nombres = persona.Nombres,
-                    Apellidos = persona.Apellidos
-                };
-
-                personaDtos.Add(personaDto);
+                var personas = await usuariosConfival.Paginar(paginacionDTO).ToListAsync();
+                await HttpContext.InsertarParametrosPaginacionEnCabecera(usuariosConfival);
+                await HttpContext.TInsertarParametrosPaginacion(usuariosConfival, paginacionDTO.RegistrosPorPagina);
+                return Ok(personas);
             }
-
-            return Ok(personaDtos);
         }
 
         [HttpGet("{identificacion},{correo}")]
@@ -116,10 +153,10 @@ namespace Controlinventarios.Controllers
 
             var personaDto = new PersonaDto
             {
-                userId = persona.userId,
-                idEmpresa = nombreEmpresa.id,
+                UserId = persona.userId,
+                IdEmpresa = nombreEmpresa.id,
                 IdArea = persona.IdArea,
-                identificacion = persona.identificacion,
+                Identificacion = persona.identificacion,
                 Estado = persona.Estado,
                 UserName = user.UserName,
                 AreaName = areaName.Nombre,
@@ -180,10 +217,10 @@ namespace Controlinventarios.Controllers
                 // Agrega la persona transformada a DTO a la lista
                 personasDto.Add(new PersonaDto
                 {
-                    userId = persona.userId,
-                    idEmpresa = empresa.id,
+                    UserId = persona.userId,
+                    IdEmpresa = empresa.id,
                     IdArea = persona.IdArea,
-                    identificacion = persona.identificacion,
+                    Identificacion = persona.identificacion,
                     Estado = persona.Estado,
                     UserName = nombreUsuario.UserName,
                     AreaName = area.Nombre,
@@ -216,10 +253,10 @@ namespace Controlinventarios.Controllers
                 // Agrega el usuario transformado a DTO a la lista
                 personasDto.Add(new PersonaDto
                 {
-                    userId = usuario.Id,
-                    idEmpresa = empresa.id,
+                    UserId = usuario.Id,
+                    IdEmpresa = empresa.id,
                     IdArea = area.id,
-                    identificacion = nombre.identificacion,
+                    Identificacion = nombre.identificacion,
                     Estado = nombre.Estado,
                     UserName = usuario.UserName,
                     AreaName = area.Nombre,
@@ -270,10 +307,10 @@ namespace Controlinventarios.Controllers
 
             var personaDto = new PersonaDto
             {
-                userId = persona.userId,
-                idEmpresa = nombreEmpresa.id,
+                UserId = persona.userId,
+                IdEmpresa = nombreEmpresa.id,
                 IdArea = persona.IdArea,
-                identificacion = persona.identificacion,
+                Identificacion = persona.identificacion,
                 Estado = persona.Estado,
                 UserName = user.UserName,
                 AreaName = areaName.Nombre,

@@ -114,17 +114,19 @@ namespace Controlinventarios.Controllers
 
         //    return Ok(usuariosConEquipos);
         //}
-        
+
         [HttpGet("UsuarioConSuListaEquipos")]
         public async Task<ActionResult<List<ListaAsignacionDto>>> Get5()
         {
-            var usuariosConEquipos = await _context.inv_persona
-           .Join(_context.aspnetusers, ip => ip.userId, a => a.Id, (ip, a) => new { ip, a }) //  aspnetusers
-           .Join(_context.inv_area, ia2 => ia2.ip.IdArea, ia => ia.id, (temp, ia) => new { temp.ip, temp.a, ia }) // inv_area
-           .Join(_context.inv_empresa, ie => ie.ip.idEmpresa, ie => ie.id, (temp, ie) => new { temp.ip, temp.a, temp.ia, ie }) // inv_empresa
-           .GroupJoin(_context.inv_asignacion, ua => ua.a.Id, ia => ia.IdPersona, (ua, asignaciones) => new { ua, asignaciones }) //  inv_asignacion
-           .Where(result => result.asignaciones.Any()) // Filtrar solo usuarios con equipos asignados
-           .ToListAsync();
+            var usuariosConEquipos = _context.inv_persona
+            .Join(_context.aspnetusers, ip => ip.userId, a => a.Id, (ip, a) => new { ip, a })
+            .Join(_context.inv_area, ia2 => ia2.ip.IdArea, ia => ia.id, (temp, ia) => new { temp.ip, temp.a, ia })
+            .Join(_context.inv_empresa, ie => ie.ip.idEmpresa, ie => ie.id, (temp, ie) => new { temp.ip, temp.a, temp.ia, ie })
+            .GroupJoin(_context.inv_asignacion, ua => ua.a.Id, ia => ia.IdPersona, (ua, asignaciones) => new { ua, asignaciones })
+            .AsEnumerable() // Se ejecuta en memoria antes de aplicar Any()
+            .Where(result => result.asignaciones.Any()) // Filtra usuarios con equipos asignados
+            .ToList(); // Se usa ToList() en lugar de ToListAsync()
+
 
             var listaUsuarios = new List<ListaAsignacionDto>();
 
@@ -133,8 +135,8 @@ namespace Controlinventarios.Controllers
                 listaUsuarios.Add(new ListaAsignacionDto
                 {
                     IdPersona = result.ua.a.Id,
-                    ApellidoPersona = result.ua.ip.Nombres,
-                    NombrePersona = result.ua.ip.Apellidos,
+                    ApellidoPersona = result.ua.ip.Apellidos,
+                    NombrePersona = result.ua.ip.Nombres,
                     CCPersonas = result.ua.ip.identificacion,
                     AreaPersona = result.ua.ia.Nombre, // Manteniendo el ID del área
                     EmpresaPersona = result.ua.ie.Nombre, // Manteniendo el ID de la empresa

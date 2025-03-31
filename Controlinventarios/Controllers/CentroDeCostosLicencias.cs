@@ -8,20 +8,20 @@ namespace Controlinventarios.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class CentroDeCostoController : ControllerBase
+    public class CentroDeCostosLicenciasController : ControllerBase
     {
         private readonly InventoryTIContext _context;
         private readonly IMapper _mapper;
 
-        public CentroDeCostoController(InventoryTIContext context, IMapper mapper)
+        public CentroDeCostosLicenciasController(InventoryTIContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
         }
 
 
-        [HttpGet("LinqCombinado")]
-        public async Task<ActionResult<List<CentroDeCostoDto>>> GetLinqCombinado()
+        [HttpGet("LinqCombinadoLicencias")]
+        public async Task<ActionResult<List<CentroDeCostoLicenciasDto>>> GetLinqCombinado()
         {
             // Consulta corregida para linqValorEquipo
             var linqValorEquipo = from ie in _context.inv_ensamble
@@ -32,7 +32,7 @@ namespace Controlinventarios.Controllers
                                   join ie3 in _context.inv_empresa on ip.idEmpresa equals ie3.id
                                   join if2 in _context.inv_facturaciontmk on ie.Id equals if2.IdEnsamble
                                   join im in _context.inv_marca on ie.IdMarca equals im.id
-                                  where ie.Renting == true && ie.Estado == true && (ie2.IdElementType == 0 || ie2.IdElementType == 4)
+                                  where ie.Renting == true && ie.Estado == true && ie2.IdElementType == 19 
                                   group new { ie2, im, ie, ia2, ie3, if2 } by new
                                   {
                                       ie.Id,
@@ -67,10 +67,10 @@ namespace Controlinventarios.Controllers
                                join area in _context.inv_area on persona.IdArea equals area.id
                                join empresa in _context.inv_empresa on persona.idEmpresa equals empresa.id
                                join factura in _context.inv_facturaciontmk on ensamble.Id equals factura.IdEnsamble
-                               where ensamble.Renting == true && ensamble.Estado == true && (elementType.IdElementType == 0 || elementType.IdElementType == 4)
+                               where ensamble.Renting == true && ensamble.Estado == true && elementType.IdElementType == 19
                                group new { factura.VlrNeto, area.Nombre, factura.Descripcion, factura.Fecha }
                                by new { area.id, factura.Descripcion, factura.Fecha } into g
-                               select new CentroDeCostoDto2
+                               select new CentroDeCostoLicenciasDto2
                                {
                                    AreaVlrNeto = g.Sum(x => x.VlrNeto), // suma de VlrNeto por area
                                    totalEquipos = g.Count(), // cuenta de equipos por area
@@ -95,16 +95,16 @@ namespace Controlinventarios.Controllers
             }
 
             // crear el dto para el total general de areas
-            var resultado_Total_General = new List<CentroDeCostoDto3>
+            var resultado_Total_General = new List<CentroDeCostoLicenciasDto3>
             {
-                new CentroDeCostoDto3
+                new CentroDeCostoLicenciasDto3
                 {
                     TotalVlrNeto = totalPorTodasLasAreas.TotalVlrNeto,
                     totalEquipos = totalPorTodasLasAreas.TotalEquipos,
                     TotalIva = totalPorTodasLasAreas.TotalVlrNeto * 19 / 100,
-                    Retencion = totalPorTodasLasAreas.TotalVlrNeto * 40 / 1000,
+                    Retencion = totalPorTodasLasAreas.TotalVlrNeto * 35 / 1000,
                     Factura = "Total General", // descripcion general
-                    Total_A_Pagar = totalPorTodasLasAreas.TotalVlrNeto + (totalPorTodasLasAreas.TotalVlrNeto * 19 / 100) - (totalPorTodasLasAreas.TotalVlrNeto * 40 / 1000),
+                    Total_A_Pagar = totalPorTodasLasAreas.TotalVlrNeto + (totalPorTodasLasAreas.TotalVlrNeto * 19 / 100) - (totalPorTodasLasAreas.TotalVlrNeto * 35 / 1000),
                     Fecha = DateTime.Now
                 }
             };
