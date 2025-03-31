@@ -20,7 +20,7 @@ namespace Controlinventarios.Controllers
         }
 
 
-        [HttpGet("LinqCombinado")]
+        [HttpGet("Linqcombinado")]
         public async Task<ActionResult<List<CentroDeCostoDto>>> GetLinqCombinado()
         {
             // Consulta corregida para linqValorEquipo
@@ -139,3 +139,4 @@ namespace Controlinventarios.Controllers
     }
 
 }
+ 
