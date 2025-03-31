@@ -56,7 +56,7 @@ namespace Controlinventarios.Controllers
                                   };
             if (linqValorEquipo == null)
             {
-                return BadRequest("No se encontraron valores por equipo");
+                return BadRequest("No se encontraron valores por licencia");
             }
 
             // consulta para obtener los totales de equipos por area
