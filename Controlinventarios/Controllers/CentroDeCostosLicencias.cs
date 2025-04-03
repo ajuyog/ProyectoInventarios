@@ -134,7 +134,7 @@ namespace Controlinventarios.Controllers
 
             return Ok(resultado);
         }
-
+       
 
     }
 
