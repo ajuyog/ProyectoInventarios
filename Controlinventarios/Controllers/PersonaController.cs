@@ -54,19 +54,26 @@ namespace Controlinventarios.Controllers
                 })
                 .Where(x => x.user.UserName.Contains(searchUsuarios)
                     || x.idarea.Nombre.Contains(searchUsuarios)
-                    || x.empresa.Nombre.Contains(searchUsuarios))
+                    || x.empresa.Nombre.Contains(searchUsuarios)
+                    || x.persona.persona.identificacion.Contains(searchUsuarios)
+                    || x.persona.persona.Nombres.Contains(searchUsuarios)
+                    || x.persona.persona.Apellidos.Contains(searchUsuarios)
+                    || x.persona.persona.Email.Contains(searchUsuarios)
+                    || x.persona.persona.TelefonoMovil.Contains(searchUsuarios)
+                )
                 .Select(x => new PersonaDto
                 {
-                    UserId = x.user.Id,
-                    IdArea = x.persona.persona.IdArea,
+                    UserId = x.persona.persona.userId,
                     Identificacion = x.persona.persona.identificacion,
-                    Estado = x.persona.persona.Estado,
-                    IdEmpresa = x.persona.persona.idEmpresa,
-                    UserName = x.user.UserName,
+                    Nombres = x.persona.persona.Nombres,
+                    Apellidos = x.persona.persona.Apellidos,
+                    FechaCumpleaños = x.persona.persona.FechaCumpleaños,
+                    Email = x.persona.persona.Email,
+                    TelefonoMovil = x.persona.persona.TelefonoMovil,
+                    Cargo =x.persona.persona.Cargo,
                     AreaName = x.idarea.Nombre ?? "No tiene area",
                     NombreEmpresa = x.empresa.Nombre ?? "No tiene empresa",
-                    Nombres = x.persona.persona.Nombres,
-                    Apellidos = x.persona.persona.Apellidos
+                    Estado = x.persona.persona.Estado,
                 })
                 .OrderBy(e => e.UserId).AsQueryable();
 
@@ -97,16 +104,17 @@ namespace Controlinventarios.Controllers
                 })
                  .Select(x => new PersonaDto
                  {
-                     UserId = x.user.Id,
-                     IdArea = x.persona.persona.IdArea,
+                     UserId = x.persona.persona.userId,
                      Identificacion = x.persona.persona.identificacion,
-                     Estado = x.persona.persona.Estado,
+                     Nombres = x.persona.persona.Nombres,
+                     Apellidos = x.persona.persona.Apellidos,
                      IdEmpresa = x.persona.persona.idEmpresa,
-                     UserName = x.user.UserName,
+                     Email = x.persona.persona.Email,
+                     TelefonoMovil = x.persona.persona.TelefonoMovil,
+                     FechaCumpleaños = x.persona.persona.FechaCumpleaños,
                      AreaName = x.idarea.Nombre ?? "No tiene area",
                      NombreEmpresa = x.empresa.Nombre ?? "No tiene empresa",
-                     Nombres = x.persona.persona.Nombres,
-                     Apellidos = x.persona.persona.Apellidos
+                     Estado = x.persona.persona.Estado,
                  })
                 .OrderBy(e => e.UserId).AsQueryable();
 
@@ -341,10 +349,8 @@ namespace Controlinventarios.Controllers
             // guardar los datos en la basee de datos
             await _context.SaveChangesAsync();
             //retorna lo guardado
-            return CreatedAtAction(nameof(GetId), new { id = persona.userId }, persona);
+            return Created("", persona);  // Devuelve 201 pero sin una URL específica.
         }
-
-
         [HttpPut("{userId}")]
         public async Task<ActionResult> Update(string userId, PersonaUpdateDto updateDto)
         {

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Controlinventarios.Dto;
 using Controlinventarios.Model;
+using Controlinventarios.Utildad;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,199 @@ namespace Controlinventarios.Controllers
             _context = context;
             _mapper = mapper;
         }
+        [HttpGet("UsuarioConSuListaEquipos")]
+        public async Task<ActionResult<object>> Get(string search, [FromQuery] PaginacionDTO paginacionDTO)
+        {
+            if (!string.IsNullOrEmpty(search))
+            {
+                var asigancionesConfi = _context.inv_asignacion
+                .Join(_context.inv_persona, persona => persona.IdPersona, idpersona => idpersona.userId, (persona, idpersona) => new
+                {
+                    persona,
+                    idpersona
+                })
+                .Join(_context.inv_area, persona => persona.idpersona.IdArea, idarea => idarea.id, (persona, idarea) => new
+                {
+                    persona,
+                    idarea
+                })
+                .Join(_context.inv_empresa, persona => persona.persona.idpersona.idEmpresa, empresa => empresa.id, (persona, empresa) => new
+                {
+                    persona,
+                    empresa
+                })
+                .Join(_context.aspnetusers, userName => userName.persona.persona.idpersona.userId, user => user.Id, (userName, user) => new
+                {
+                    userName.persona,
+                    userName.persona.idarea,
+                    userName.empresa,
+                    user
+                })
+                .Join(_context.inv_ensamble, persona => persona.persona.persona.persona.IdEnsamble, ensamble => ensamble.Id, (persona, ensamble) => new
+                {
+                    persona.persona,
+                    persona.idarea,
+                    persona.empresa,
+                    persona.user,
+                    ensamble
+                })
+                .Join(_context.inv_elementType,ensamble => ensamble.ensamble.IdElementType, elementType => elementType.id,(ensamble, elementType) => new
+                 {
+                        ensamble.persona,
+                        ensamble.idarea,
+                        ensamble.empresa,
+                        ensamble.user,
+                        ensamble.ensamble,
+                        ElementTypeName = elementType.Nombre // 👈 nombre del tipo de elemento
+                })
+                .Join(_context.inv_marca,ensamble => ensamble.ensamble.IdMarca,marca => marca.id,(ensamble, marca) => new
+                {
+                   ensamble.persona,
+                   ensamble.idarea,
+                   ensamble.empresa,
+                   ensamble.user,
+                   ensamble.ensamble,
+                   ensamble.ElementTypeName,
+                   MarcaName = marca.Nombre // 👈 nombre de la marca
+                })
+                .Where(x =>
+                    x.persona.persona.idpersona.userId.Contains(search) ||
+                    x.persona.persona.idpersona.Apellidos.Contains(search) ||
+                    x.persona.persona.idpersona.identificacion.Contains(search) ||
+                    x.ensamble.NumeroSerial.Contains(search) ||
+                    x.MarcaName.Contains(search) ||
+                    x.ElementTypeName.Contains(search)
+                )
+                .GroupBy(x => new
+                {
+                    x.persona.persona.idpersona.userId,
+                    x.persona.persona.idpersona.Nombres,
+                    x.persona.persona.idpersona.Apellidos,
+                    x.persona.persona.idpersona.identificacion,
+                    x.idarea.Nombre,
+                    x.user.Email,
+                    // 🔥 NO agrupes por equipo (NúmeroSerial, Estado, etc.) porque son múltiples
+                })
+                .Select(g => new ListaAsignacionDto
+                {
+                    IdPersona = g.Key.userId,
+                    NombrePersona = g.Key.Nombres,
+                    ApellidoPersona = g.Key.Apellidos,
+                    CCPersonas = g.Key.identificacion,
+                    AreaPersona = g.Key.Nombre,
+                    Email = g.Key.Email,
+                    CantidadEquiposAsignados = g.Count(),
+                    EquiposAsignados = g.Select(x => new ListaEnsambleDto
+                    {
+                        Id = x.persona.persona.persona.IdEnsamble,
+                        NumeroSerial = x.ensamble.NumeroSerial,
+                        Renting = x.ensamble.Renting,
+                        Estado = x.ensamble.Estado,
+                        TipoElemento = x.ElementTypeName,
+                        NombreMarca = x.MarcaName,
+                        FechaRegistroEquipo = x.ensamble.FechaRegistroEquipo,
+                    }).ToList()
+                })
 
+                .OrderBy(e => e.IdPersona).AsQueryable();
+                var personas = await asigancionesConfi.Paginar(paginacionDTO).ToListAsync();
+                await HttpContext.InsertarParametrosPaginacionEnCabecera(asigancionesConfi);
+                await HttpContext.TInsertarParametrosPaginacion(asigancionesConfi, paginacionDTO.RegistrosPorPagina);
+                return Ok(personas);
+            }
+            else
+            {
+                var confiAsiganciones = _context.inv_asignacion
+                .Join(_context.inv_persona, persona => persona.IdPersona, idpersona => idpersona.userId, (persona, idpersona) => new
+                {
+                    persona,
+                    idpersona
+                })
+                .Join(_context.inv_area, persona => persona.idpersona.IdArea, idarea => idarea.id, (persona, idarea) => new
+                {
+                    persona,
+                    idarea
+                })
+                .Join(_context.inv_empresa, persona => persona.persona.idpersona.idEmpresa, empresa => empresa.id, (persona, empresa) => new
+                {
+                    persona,
+                    empresa
+                })
+                .Join(_context.aspnetusers, userName => userName.persona.persona.idpersona.userId, user => user.Id, (userName, user) => new
+                {
+                    userName.persona,
+                    userName.persona.idarea,
+                    userName.empresa,
+                    user
+                })
+                .Join(_context.inv_ensamble, persona => persona.persona.persona.persona.IdEnsamble, ensamble => ensamble.Id, (persona, ensamble) => new
+                {
+                    persona.persona,
+                    persona.idarea,
+                    persona.empresa,
+                    persona.user,
+                    ensamble
+                })
+                .Join(_context.inv_elementType, ensamble => ensamble.ensamble.IdElementType, elementType => elementType.id, (ensamble, elementType) => new
+                {
+                    ensamble.persona,
+                    ensamble.idarea,
+                    ensamble.empresa,
+                    ensamble.user,
+                    ensamble.ensamble,
+                    ElementTypeName = elementType.Nombre // 👈 nombre del tipo de elemento
+                })
+                .Join(_context.inv_marca, ensamble => ensamble.ensamble.IdMarca, marca => marca.id, (ensamble, marca) => new
+                {
+                    ensamble.persona,
+                    ensamble.idarea,
+                    ensamble.empresa,
+                    ensamble.user,
+                    ensamble.ensamble,
+                    ensamble.ElementTypeName,
+                    MarcaName = marca.Nombre // 👈 nombre de la marca
+                })
+                .GroupBy(x => new
+                {
+                    x.persona.persona.idpersona.userId,
+                    x.persona.persona.idpersona.Nombres,
+                    x.persona.persona.idpersona.Apellidos,
+                    x.persona.persona.idpersona.identificacion,
+                    x.idarea.Nombre,
+                    x.user.Email,
+                    // 🔥 NO agrupes por equipo (NúmeroSerial, Estado, etc.) porque son múltiples
+                })
+                .Select(g => new ListaAsignacionDto
+                {
+                    IdPersona = g.Key.userId,
+                    NombrePersona = g.Key.Nombres,
+                    ApellidoPersona = g.Key.Apellidos,
+                    CCPersonas = g.Key.identificacion,
+                    AreaPersona = g.Key.Nombre,
+                    Email = g.Key.Email,
+                    CantidadEquiposAsignados = g.Count(),
+                    EquiposAsignados = g
+                    .Where(x => x.ensamble.NumeroSerial != null && x.ElementTypeName != null) // 🔥 Solo los ensambles que existan bien
+                    .Select(x => new ListaEnsambleDto
+                    {
+                        Id = x.persona.persona.persona.IdEnsamble,
+                        NumeroSerial = x.ensamble.NumeroSerial,
+                        Renting = x.ensamble.Renting,
+                        Estado = x.ensamble.Estado,
+                        TipoElemento = x.ElementTypeName,
+                        NombreMarca = x.MarcaName,
+                        FechaRegistroEquipo = x.ensamble.FechaRegistroEquipo,
+                    }).ToList()
+
+                })
+                .OrderBy(e => e.IdPersona).AsQueryable();
+
+                var personas = await confiAsiganciones.Paginar(paginacionDTO).ToListAsync();
+                await HttpContext.InsertarParametrosPaginacionEnCabecera(confiAsiganciones);
+                await HttpContext.TInsertarParametrosPaginacion(confiAsiganciones, paginacionDTO.RegistrosPorPagina);
+                return Ok(personas);
+            }
+        }
 
         [HttpGet]
         public async Task<ActionResult<List<AsignacionDto>>> Get()
@@ -63,7 +256,7 @@ namespace Controlinventarios.Controllers
                     IdPersona = asignacion.IdPersona,
                     IdEnsamble = asignacion.IdEnsamble,
                     NombrePersona = identificacionPersona.Nombres,
-                    Numeroserial = ensamble.NumeroSerial,
+                    //Numeroserial = ensamble.NumeroSerial,
                     FechaRegistro = asignacion.FechaRegistro
                 };
 
@@ -115,59 +308,56 @@ namespace Controlinventarios.Controllers
         //    return Ok(usuariosConEquipos);
         //}
 
-        [HttpGet("UsuarioConSuListaEquipos")]
-        public async Task<ActionResult<List<ListaAsignacionDto>>> Get5()
-        {
-            var usuariosConEquipos = _context.inv_persona
-            .Join(_context.aspnetusers, ip => ip.userId, a => a.Id, (ip, a) => new { ip, a })
-            .Join(_context.inv_area, ia2 => ia2.ip.IdArea, ia => ia.id, (temp, ia) => new { temp.ip, temp.a, ia })
-            .Join(_context.inv_empresa, ie => ie.ip.idEmpresa, ie => ie.id, (temp, ie) => new { temp.ip, temp.a, temp.ia, ie })
-            .GroupJoin(_context.inv_asignacion, ua => ua.a.Id, ia => ia.IdPersona, (ua, asignaciones) => new { ua, asignaciones })
-            .AsEnumerable() // Se ejecuta en memoria antes de aplicar Any()
-            .Where(result => result.asignaciones.Any()) // Filtra usuarios con equipos asignados
-            .ToList(); // Se usa ToList() en lugar de ToListAsync()
+        //public async Task<ActionResult<List<ListaAsignacionDto>>> Get5()
+        //{
+        //    var usuariosConEquipos = _context.inv_persona
+        //    .Join(_context.aspnetusers, ip => ip.userId, a => a.Id, (ip, a) => new { ip, a })
+        //    .Join(_context.inv_area, ia2 => ia2.ip.IdArea, ia => ia.id, (temp, ia) => new { temp.ip, temp.a, ia })
+        //    .Join(_context.inv_empresa, ie => ie.ip.idEmpresa, ie => ie.id, (temp, ie) => new { temp.ip, temp.a, temp.ia, ie })
+        //    .GroupJoin(_context.inv_asignacion, ua => ua.a.Id, ia => ia.IdPersona, (ua, asignaciones) => new { ua, asignaciones })
+        //    .AsEnumerable() // Se ejecuta en memoria antes de aplicar Any()
+        //    .Where(result => result.asignaciones.Any()) // Filtra usuarios con equipos asignados
+        //    .ToList(); // Se usa ToList() en lugar de ToListAsync()
 
 
-            var listaUsuarios = new List<ListaAsignacionDto>();
+        //    var listaUsuarios = new List<ListaAsignacionDto>();
 
-            foreach (var result in usuariosConEquipos)
-            {
-                listaUsuarios.Add(new ListaAsignacionDto
-                {
-                    IdPersona = result.ua.a.Id,
-                    ApellidoPersona = result.ua.ip.Apellidos,
-                    NombrePersona = result.ua.ip.Nombres,
-                    CCPersonas = result.ua.ip.identificacion,
-                    AreaPersona = result.ua.ia.Nombre, // Manteniendo el ID del área
-                    EmpresaPersona = result.ua.ie.Nombre, // Manteniendo el ID de la empresa
-                    Email = result.ua.a.Email,
-                    CantidadEquiposAsignados = result.asignaciones.Count(), // Contador de equipos asignados
-                    EquiposAsignados = result.asignaciones
-                        .Join(_context.inv_ensamble, ia => ia.IdEnsamble, ie => ie.Id, (ia, ie) => new { ia, ie })
-                        .Join(_context.inv_marca, ieResult => ieResult.ie.IdMarca, im => im.id, (ieResult, im) => new { ieResult, im })
-                        .Join(_context.inv_elementType, ieResult => ieResult.ieResult.ie.IdElementType, ie4 => ie4.id, (ieResult, ie4) => new
-                        ListaEnsambleDto
-                        {
-                            Id = ieResult.ieResult.ie.Id,
-                            NumeroSerial = ieResult.ieResult.ie.NumeroSerial,
-                            Estado = ieResult.ieResult.ie.Estado,
-                            Renting = ieResult.ieResult.ie.Renting,
-                            TipoElemento = ie4.Nombre,
-                            NombreMarca = ieResult.im.Nombre,
-                            FechaRegistroEquipo = ieResult.ieResult.ia.FechaRegistro
-                        }).ToList()
-                });
-            }
+        //    foreach (var result in usuariosConEquipos)
+        //    {
+        //        listaUsuarios.Add(new ListaAsignacionDto
+        //        {
+        //            IdPersona = result.ua.a.Id,
+        //            ApellidoPersona = result.ua.ip.Apellidos,
+        //            NombrePersona = result.ua.ip.Nombres,
+        //            CCPersonas = result.ua.ip.identificacion,
+        //            AreaPersona = result.ua.ia.Nombre, // Manteniendo el ID del área
+        //            EmpresaPersona = result.ua.ie.Nombre, // Manteniendo el ID de la empresa
+        //            Email = result.ua.a.Email,
+        //            CantidadEquiposAsignados = result.asignaciones.Count(), // Contador de equipos asignados
+        //            EquiposAsignados = result.asignaciones
+        //                .Join(_context.inv_ensamble, ia => ia.IdEnsamble, ie => ie.Id, (ia, ie) => new { ia, ie })
+        //                .Join(_context.inv_marca, ieResult => ieResult.ie.IdMarca, im => im.id, (ieResult, im) => new { ieResult, im })
+        //                .Join(_context.inv_elementType, ieResult => ieResult.ieResult.ie.IdElementType, ie4 => ie4.id, (ieResult, ie4) => new
+        //                ListaEnsambleDto
+        //                {
+        //                    Id = ieResult.ieResult.ie.Id,
+        //                    NumeroSerial = ieResult.ieResult.ie.NumeroSerial,
+        //                    Estado = ieResult.ieResult.ie.Estado,
+        //                    Renting = ieResult.ieResult.ie.Renting,
+        //                    TipoElemento = ie4.Nombre,
+        //                    NombreMarca = ieResult.im.Nombre,
+        //                    FechaRegistroEquipo = ieResult.ieResult.ia.FechaRegistro
+        //                }).ToList()
+        //        });
+        //    }
 
-            if (!listaUsuarios.Any())
-            {
-                return BadRequest("No se encontraron usuarios con equipos asignados.");
-            }
+        //    if (!listaUsuarios.Any())
+        //    {
+        //        return BadRequest("No se encontraron usuarios con equipos asignados.");
+        //    }
 
-            return Ok(listaUsuarios);
-        }
-
-
+        //    return Ok(listaUsuarios);
+        //}
 
         [HttpGet("{Idpersona}")]
         public async Task<ActionResult<List<ListaAsignacionDto>>> GetId(string Idpersona) // Recibir el parámetro
@@ -212,9 +402,6 @@ namespace Controlinventarios.Controllers
 
             return Ok(listaUsuarios);
         }
-
-
-
         [HttpPost]
         public async Task<ActionResult> Post(AsignacionCreateDto createDto)
         {

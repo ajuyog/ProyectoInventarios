@@ -10,13 +10,6 @@
         public string AreaPersona { get; set; }
         public string EmpresaPersona { get; set; }
         public int CantidadEquiposAsignados { get; set; }
-        public int IdEquipo { get; set; }
-        public string NumeroSerial { get; set; }
-        public bool Estado { get; set; }
-        public bool Renting { get; set; }
-        public string TipoElemento { get; set; }
-        public string NombreMarca { get; set; }
-        public DateOnly FechaRegistroEquipo { get; set; }
         public List<ListaEnsambleDto> EquiposAsignados { get; set; }
     }
 }
