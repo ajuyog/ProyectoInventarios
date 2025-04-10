@@ -2,18 +2,8 @@
 using Controlinventarios.Dto;
 using Controlinventarios.Model;
 using Controlinventarios.Utildad;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NetTopologySuite.Operation.Polygonize;
-using Newtonsoft.Json.Linq;
-using NuGet.Protocol;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Configuration;
-using System.Threading.Tasks;
 
 namespace Controlinventarios.Controllers
 {
@@ -459,7 +449,6 @@ namespace Controlinventarios.Controllers
             return CreatedAtAction(nameof(GetId), new { idEnsamble = ensambleExiste.IdEnsamble }, ensambleExiste);
         }
 
-        
         //[HttpPatch("CambiarAsignado/{EnsambleId}")]
         //public async Task<ActionResult> Patch(int EnsambleId, AsignacionPatchDto patchDto)
         //{
@@ -488,7 +477,6 @@ namespace Controlinventarios.Controllers
         //    // Retornar la respuesta con CreatedAtAction
         //    return CreatedAtAction(nameof(GetId), new { idEnsamble = asignacionExistente.IdEnsamble }, asignacionExistente);
         //}
-
 
         [HttpDelete("{IdEnsamble}")]
         public async Task<ActionResult> Delete(int IdEnsamble)

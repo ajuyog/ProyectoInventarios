@@ -27,8 +27,7 @@ namespace Controlinventarios.Controllers
             _context = context;
             _mapper = mapper;
         }
-
-
+        
         [HttpGet]
         public async Task<ActionResult<object>> Get(string searchUsuarios, [FromQuery] PaginacionDTO paginacionDTO)
         {
@@ -176,7 +175,6 @@ namespace Controlinventarios.Controllers
             return Ok(personaDto);
         }
 
-
         [HttpGet("{Busqueda}")]
         public async Task<ActionResult<List<PersonaDto>>> Get2(string Busqueda)
         {
@@ -278,7 +276,6 @@ namespace Controlinventarios.Controllers
             return Ok(personasDto);
         }
 
-
         [HttpGet("BusquedaPorId/{userId}")]
         public async Task<ActionResult<PersonaDto>> GetById(string userId)
         {
@@ -330,7 +327,6 @@ namespace Controlinventarios.Controllers
             return Ok(personaDto);
         }
 
-
         [HttpPost]
         public async Task<ActionResult> Post(PersonaCreateDto createDto)
         {
@@ -343,6 +339,11 @@ namespace Controlinventarios.Controllers
             {
                 return BadRequest($"El area con el ID {createDto.IdArea} no fue encontrado.");
             }
+            var userId = await _context.inv_persona.FirstOrDefaultAsync(x => x.userId == createDto.userId);
+            if (userId != null)
+            {
+                return BadRequest($"Ya existe una persona con el id: {createDto.userId}");
+            }
 
             // añade la entidad al contexto
             _context.inv_persona.Add(persona);
@@ -351,6 +352,7 @@ namespace Controlinventarios.Controllers
             //retorna lo guardado
             return Created("", persona);  // Devuelve 201 pero sin una URL específica.
         }
+
         [HttpPut("{userId}")]
         public async Task<ActionResult> Update(string userId, PersonaUpdateDto updateDto)
         {
@@ -359,13 +361,6 @@ namespace Controlinventarios.Controllers
             {
                 return BadRequest($"No ecnontraron personas con el id: {userId}");
             }
-
-            var personExiste = await _context.aspnetusers.FirstOrDefaultAsync(x => x.Id == persona.userId);
-            if (personExiste == null)
-            {
-                return BadRequest($"No existe una persona con el id:{persona.userId}");
-            }
-
             //verificacion si existe el area
             var areaExiste = await _context.inv_area.FirstOrDefaultAsync(x => x.id == updateDto.IdArea);
             if (areaExiste == null)
@@ -378,7 +373,7 @@ namespace Controlinventarios.Controllers
             _context.inv_persona.Update(persona);
             await _context.SaveChangesAsync();
 
-            return Ok("Se realizaron los cambios correctamente");
+            return Created("", persona);
 
         }
 

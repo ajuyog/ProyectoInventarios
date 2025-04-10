@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Controlinventarios.Dto;
 using Controlinventarios.Model;
+using Controlinventarios.Utildad;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
@@ -22,6 +23,38 @@ namespace Controlinventarios.Controllers
             _context = context;
             _mapper = mapper;
         }
+
+        [HttpGet("Paginado")]
+        public async Task<ActionResult<object>> Get1(string search, [FromQuery] PaginacionDTO paginacionDTO)
+        {
+            var query = _context.inv_elementType
+            .Join(_context.inv_elementType,idelemento => idelemento.id,nombreelemento => nombreelemento.id,(idelemento, nombreelemento) => new
+            {
+                idelemento,
+                nombreelemento
+            })
+            .Select(x => new ElementTypeDto
+            {
+                id = x.idelemento.id,
+                Nombre = x.idelemento.Nombre,
+                IdElementType = x.idelemento.IdElementType,
+                NombreElemento = x.nombreelemento.Nombre
+            })
+            .AsQueryable();
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(x =>
+                    x.Nombre.Contains(search) ||
+                    x.NombreElemento.Contains(search)
+                );
+            }
+            var elementos = await query.Paginar(paginacionDTO).ToListAsync();
+            await HttpContext.InsertarParametrosPaginacionEnCabecera(query);
+            await HttpContext.TInsertarParametrosPaginacion(query, paginacionDTO.RegistrosPorPagina);
+
+            return Ok(elementos);
+        }
+
 
 
         [HttpGet]
