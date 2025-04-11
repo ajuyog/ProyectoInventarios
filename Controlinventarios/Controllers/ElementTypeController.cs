@@ -54,9 +54,6 @@ namespace Controlinventarios.Controllers
 
             return Ok(elementos);
         }
-
-
-
         [HttpGet]
         public async Task<ActionResult<List<ElementTypeDto>>> Get()
         {
@@ -66,8 +63,6 @@ namespace Controlinventarios.Controllers
             {
                 return BadRequest("No se encontraron tipos de elementos");
             }
-
-            // Lista para almacenar los DTOs
             var elementoDtos = new List<ElementTypeDto>();
 
             foreach (var e in elementos)
