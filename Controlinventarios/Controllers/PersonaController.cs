@@ -72,6 +72,8 @@ namespace Controlinventarios.Controllers
                     Cargo =x.persona.persona.Cargo,
                     AreaName = x.idarea.Nombre ?? "No tiene area",
                     NombreEmpresa = x.empresa.Nombre ?? "No tiene empresa",
+                    IdArea = x.persona.idarea.id,
+                    IdEmpresa = x.empresa.id,
                     Estado = x.persona.persona.Estado,
                 })
                 .OrderBy(e => e.UserId).AsQueryable();
@@ -107,12 +109,14 @@ namespace Controlinventarios.Controllers
                      Identificacion = x.persona.persona.identificacion,
                      Nombres = x.persona.persona.Nombres,
                      Apellidos = x.persona.persona.Apellidos,
-                     IdEmpresa = x.persona.persona.idEmpresa,
+                     FechaCumpleaños = x.persona.persona.FechaCumpleaños,
                      Email = x.persona.persona.Email,
                      TelefonoMovil = x.persona.persona.TelefonoMovil,
-                     FechaCumpleaños = x.persona.persona.FechaCumpleaños,
+                     Cargo = x.persona.persona.Cargo,
                      AreaName = x.idarea.Nombre ?? "No tiene area",
                      NombreEmpresa = x.empresa.Nombre ?? "No tiene empresa",
+                     IdArea = x.persona.idarea.id,
+                     IdEmpresa = x.empresa.id,
                      Estado = x.persona.persona.Estado,
                  })
                 .OrderBy(e => e.UserId).AsQueryable();
